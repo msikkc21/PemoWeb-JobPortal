@@ -6,7 +6,8 @@ use Illuminate\Database\Eloquent\Model;
 
 class JobSeekerProfile extends Model
 {
-    protected $table = 'job_seeker_profiles';
+    // Match migration table name
+    protected $table = 'jobseeker_profiles';
     protected $primaryKey = 'id_pencari';
 
     const CREATED_AT = 'dibuat_pada';
