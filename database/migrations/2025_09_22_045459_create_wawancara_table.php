@@ -17,6 +17,8 @@ return new class extends Migration
             $table->dateTime('jadwal');
             $table->string('lokasi');
             $table->string('status');
+
+            $table->foreign('id_lamaran')->references('id_lamaran')->on('lamarans')->onDelete('cascade');
         });
     }
 

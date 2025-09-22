@@ -15,7 +15,7 @@ return new class extends Migration
             $table->bigIncrements('id_pencari');
 
             $table->foreignId('id_pengguna')
-                ->references('id')->on('users')
+                ->references('id_pengguna')->on('pengguna')
                 ->cascadeOnUpdate()
                 ->cascadeOnDelete();
 
