@@ -19,5 +19,14 @@ class DatabaseSeeder extends Seeder
             LowonganSeeder::class,
             KeahlianSeeder::class,
         ]);
+
+        //zidnan
+        $this->call(ResumeSeeder::class);
+
+        //zidnan
+        $this->call([
+            ResumeSeeder::class,
+            WawancaraSeeder::class,
+        ]);
     }
 }
