@@ -12,7 +12,6 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('pencari_kerja_keahlians', function (Blueprint $table) {
-            $table->id();
             $table->unsignedBigInteger('id_pencari');
             $table->unsignedBigInteger('id_keahlian');
             $table->enum('tingkat', ['pemula', 'menengah', 'mahir']);
@@ -20,8 +19,8 @@ return new class extends Migration
             $table->timestamps();
 
             $table->primary(['id_pencari', 'id_keahlian']);
-            $table->foreign('id_pencari')->references('id_pencari')->on('profil_pencarikerja')->onDelete('cascade');
-            $table->foreign('id_keahlian')->references('id_keahlian')->on('keahlians')->onDelete('cascade');
+            $table->foreign('id_pencari')->references('id_pencari')->on('jobseeker_profiles')->onDelete('cascade');
+            $table->foreign('id_keahlian')->references('id')->on('keahlians')->onDelete('cascade');
         });
     }
 
