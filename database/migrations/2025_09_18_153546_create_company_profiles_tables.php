@@ -12,7 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('company_profiles', function (Blueprint $table) {
-            $table->bigIncrements('id_perusahaan');
+            $table->id();
 
             $table->unsignedBigInteger('id_pengguna');
             $table->string('nama_perusahaan');

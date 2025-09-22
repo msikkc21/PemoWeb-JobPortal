@@ -13,10 +13,11 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        // Don't create users; rely on existing users only
         $this->call([
             CompanyProfileSeeder::class,
             JobSeekerProfileSeeder::class,
+            LowonganSeeder::class,
+            KeahlianSeeder::class,
         ]);
     }
 }
