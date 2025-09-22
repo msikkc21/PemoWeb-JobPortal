@@ -98,16 +98,20 @@ export default function Register() {
                 <div className="mt-4">
                     <InputLabel htmlFor="role" value="Role" />
 
-                    <TextInput
+                    <select
                         id="role"
-                        type="text"
                         name="role"
                         value={data.role}
-                        className="mt-1 block w-full"
-                        autoComplete="role"
+                        className="focus:border-primary focus:ring-primary mt-1 block w-full rounded-md border-gray-300 shadow-sm"
                         onChange={(e) => setData('role', e.target.value)}
                         required
-                    />
+                    >
+                        <option value="" disabled>
+                            -- Pilih Role --
+                        </option>
+                        <option value="Perusahaan">Perusahaan</option>
+                        <option value="Pencari Kerja">Pencari Kerja</option>
+                    </select>
 
                     <InputError message={errors.role} className="mt-2" />
                 </div>
