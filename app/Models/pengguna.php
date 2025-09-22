@@ -27,11 +27,11 @@ class Pengguna extends Authenticatable
 
     public function profilPencariKerja(): HasOne
     {
-        return $this->hasOne(ProfilPencariKerja::class, 'id_pengguna', 'id_pengguna');
+        return $this->hasOne(JobSeekerProfile::class, 'id_pengguna', 'id_pengguna');
     }
 
     public function profilPerusahaan(): HasOne
     {
-        return $this->hasOne(ProfilPerusahaan::class, 'id_pengguna', 'id_pengguna');
+        return $this->hasOne(CompanyProfile::class, 'id_pengguna', 'id_pengguna');
     }
 }

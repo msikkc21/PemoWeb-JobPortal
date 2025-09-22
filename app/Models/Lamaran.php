@@ -30,7 +30,7 @@ class Lamaran extends Model
 
     public function pencari()
     {
-        return $this->belongsTo(ProfilPencariKerja::class, 'id_pencari', 'id_pencari');
+        return $this->belongsTo(JobSeekerProfile::class, 'id_pencari', 'id_pencari');
     }
 
     public function resume()

@@ -22,8 +22,8 @@ return new class extends Migration
             $table->timestamps();
 
             $table->foreign('id_lowongan')->references('id_lowongan')->on('lowongans')->onDelete('cascade');
-            $table->foreign('id_pencari')->references('id_pencari')->on('profil_pencari_kerjas')->onDelete('cascade');
-            $table->foreign('id_resume')->references('id_resume')->on('resumes')->onDelete('cascade');
+            $table->foreign('id_pencari')->references('id_pencari')->on('jobseeker_profiles')->onDelete('cascade');
+            $table->foreign('id_resume')->references('id_resume')->on('resume')->onDelete('cascade');
         });
     }
 

@@ -12,7 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('resume', function (Blueprint $table) {
-            $table->increments('id_resume'); // primary key auto increment
+            $table->id('id_resume'); // primary key auto increment
             $table->unsignedBigInteger('id_pencari'); // foreign key ke tabel pencari kerja (nanti bisa ditambah relasi)
             $table->string('file_cv');
             $table->text('data_parsing');
