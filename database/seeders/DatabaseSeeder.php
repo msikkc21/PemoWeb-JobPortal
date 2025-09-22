@@ -19,5 +19,14 @@ class DatabaseSeeder extends Seeder
             'name' => 'Test User',
             'email' => 'test@example.com',
         ]);
+
+        //zidnan
+        $this->call(ResumeSeeder::class);
+
+        //zidnan
+        $this->call([
+            ResumeSeeder::class,
+            WawancaraSeeder::class,
+        ]);
     }
 }
