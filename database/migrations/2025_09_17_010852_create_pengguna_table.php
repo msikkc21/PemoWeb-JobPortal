@@ -13,7 +13,8 @@ return new class extends Migration
             $table->string('nama', 100); 
             $table->string('email', 100)->unique(); 
             $table->string('password'); 
-            $table->enum('peran', ['Admin', 'Pencari Kerja', 'Perusahaan']);
+            // $table->enum('peran', ['Admin', 'Pencari Kerja', 'Perusahaan']);
+            $table->foreignId('role_id')->constrained('roles')->onDelete('cascade');
             $table->timestamps();
         });
     }

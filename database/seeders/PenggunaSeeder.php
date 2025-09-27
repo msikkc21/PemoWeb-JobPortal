@@ -16,15 +16,20 @@ class PenggunaSeeder extends Seeder
     {
         $faker = Faker::create('id_ID');
         
+        $adminRoleId = DB::table('roles')->where('name','Admin')->value('id');
+
         // Create one admin user
         DB::table('pengguna')->insert([
             'nama' => 'Admin JobPortal',
             'email' => 'admin@jobportal.com',
             'password' => Hash::make('password123'),
-            'peran' => 'Admin',
+            'role_id' => $adminRoleId,
             'created_at' => now(),
             'updated_at' => now(),
         ]);
+
+
+        $jobSeekerRoleId = DB::table('roles')->where('name','Pencari Kerja')->value('id');
 
         // Create 5 job seekers
         for ($i = 1; $i <= 5; $i++) {
@@ -32,11 +37,14 @@ class PenggunaSeeder extends Seeder
                 'nama' => $faker->name,
                 'email' => 'pencarikerja' . $i . '@example.com',
                 'password' => Hash::make('password123'),
-                'peran' => 'Pencari Kerja',
+                'role_id' => $jobSeekerRoleId,
                 'created_at' => now(),
                 'updated_at' => now(),
             ]);
         }
+
+
+        $companyRoleId = DB::table('roles')->where('name','Perusahaan')->value('id');
 
         // Create 3 companies
         $companyNames = ['PT Teknologi Maju', 'CV Desain Kreatif', 'PT Global Inovasi'];
@@ -46,7 +54,7 @@ class PenggunaSeeder extends Seeder
                 'nama' => $companyNames[$i],
                 'email' => 'perusahaan' . ($i + 1) . '@example.com',
                 'password' => Hash::make('password123'),
-                'peran' => 'Perusahaan',
+                'role_id' => $companyRoleId,
                 'created_at' => now(),
                 'updated_at' => now(),
             ]);

@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Models\Pengguna as User;
+use App\Models\Role;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -20,7 +21,12 @@ class RegisteredUserController extends Controller
      */
     public function create(): Response
     {
-        return Inertia::render('Auth/Register');
+        return Inertia::render(
+            'Auth/Register',
+            [
+                'roles' => Role::all(['id', 'name'])
+            ]
+        );
     }
 
     /**
@@ -32,16 +38,16 @@ class RegisteredUserController extends Controller
     {
         $request->validate([
             'name' => 'required|string|max:255',
-            'email' => 'required|string|lowercase|email|max:255|unique:'.User::class,
+            'email' => 'required|string|lowercase|email|max:255|unique:' . User::class,
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
-            'role' => 'required|in:Pencari Kerja,Perusahaan',
+            'role' => 'required',
         ]);
 
         $user = User::create([
             'nama' => $request->name,
             'email' => $request->email,
             'password' => Hash::make($request->password),
-            'peran' => $request->role,
+            'role_id' => $request->role,
         ]);
 
         event(new Registered($user));

@@ -18,10 +18,12 @@ class JobSeekerProfileSeeder extends Seeder
         $faker = Faker::create('id_ID');
 
         // Get all users with 'Pencari Kerja' role
-        $jobSeekerUserIds = DB::table('pengguna')
-            ->where('peran', 'Pencari Kerja')
-            ->pluck('id_pengguna')
-            ->toArray();
+        // $jobSeekerUserIds = DB::table('pengguna')
+        //     ->where('peran', 'Pencari Kerja')
+        //     ->pluck('id_pengguna')
+        //     ->toArray();
+        $jobSeekerRoleId = DB::table('roles')->where('name','Pencari Kerja')->value('id');
+        $jobSeekerUserIds = DB::table('pengguna')->where('role_id', $jobSeekerRoleId)->pluck('id_pengguna')->toArray();
 
         if (empty($jobSeekerUserIds)) {
             $this->command->warn('JobSeekerProfileSeeder skipped: no users with Pencari Kerja role found.');

@@ -19,11 +19,9 @@ class CompanyProfileSeeder extends Seeder
         $faker = Faker::create('id_ID');
 
         // Get all users with 'Perusahaan' role
-        $companyUserIds = DB::table('pengguna')
-            ->where('peran', 'Perusahaan')
-            ->pluck('id_pengguna')
-            ->toArray();
-            
+        $companyRoleId = DB::table('roles')->where('name', 'Perusahaan')->value('id');
+        $companyUserIds = DB::table('pengguna')->where('role_id', $companyRoleId)->pluck('id_pengguna')->toArray();
+
         if (empty($companyUserIds)) {
             $this->command->warn('CompanyProfileSeeder skipped: no users with Perusahaan role found.');
             return;
@@ -68,12 +66,12 @@ class CompanyProfileSeeder extends Seeder
                 'tahun_dibentuk' => 2008,
             ],
         ];
-        
+
         // Loop through company users and assign company details
         foreach ($companyUserIds as $index => $userId) {
             // Use modulo to cycle through company details if we have more users than details
             $detailIndex = $index % count($companyDetails);
-            
+
             // Create company profile
             DB::table('company_profiles')->insert([
                 'id_pengguna' => $userId,

@@ -5,7 +5,7 @@ import TextInput from '@/Components/TextInput';
 import GuestLayout from '@/Layouts/GuestLayout';
 import { Head, Link, useForm } from '@inertiajs/react';
 
-export default function Register() {
+export default function Register({ roles }) {
     const { data, setData, post, processing, errors, reset } = useForm({
         name: '',
         email: '',
@@ -98,7 +98,13 @@ export default function Register() {
                 <div className="mt-4">
                     <InputLabel htmlFor="role" value="Role" />
 
-                    <select
+                    <select id="role" name="role" value={data.role} onChange={(e) => setData('role', e.target.value)}>
+                        <option value="" disabled>-- Pilih Role --</option>
+                        {roles.map(r => (
+                            <option key={r.id} value={r.id}>{r.name}</option>
+                        ))}
+                    </select>
+                    {/* <select
                         id="role"
                         name="role"
                         value={data.role}
@@ -109,9 +115,17 @@ export default function Register() {
                         <option value="" disabled>
                             -- Pilih Role --
                         </option>
-                        <option value="Perusahaan">Perusahaan</option>
-                        <option value="Pencari Kerja">Pencari Kerja</option>
-                    </select>
+                        {Array.isArray(roles) && roles.map((r, idx) => {
+                            const value = typeof r === 'string' ? r : r.name ?? r.value ?? '';
+                            const key = typeof r === 'object' ? r.id ?? idx : `${r}-${idx}`;
+                            const label = typeof r === 'string' ? r : r.name ?? r.label ?? value;
+                            return (
+                                <option key={key} value={value}>
+                                    {label}
+                                </option>
+                            );
+                        })}
+                    </select> */}
 
                     <InputError message={errors.role} className="mt-2" />
                 </div>
@@ -129,6 +143,6 @@ export default function Register() {
                     </PrimaryButton>
                 </div>
             </form>
-        </GuestLayout>
+        </GuestLayout >
     );
 }

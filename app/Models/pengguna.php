@@ -17,7 +17,7 @@ class Pengguna extends Authenticatable
         'nama',
         'email',
         'password',
-        'peran',
+        'role_id',
     ];
 
     protected $hidden = [
@@ -34,4 +34,9 @@ class Pengguna extends Authenticatable
     {
         return $this->hasOne(CompanyProfile::class, 'id_pengguna', 'id_pengguna');
     }
-}
+
+    public function role()
+    {
+        return $this->belongsTo(Role::class, 'role_id');
+    }
+};
