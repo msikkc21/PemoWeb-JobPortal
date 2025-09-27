@@ -29,7 +29,7 @@ class PenggunaSeeder extends Seeder
         ]);
 
 
-        $jobSeekerRoleId = DB::table('roles')->where('name','Pencari Kerja')->value('id');
+        $jobSeekerRoleId = DB::table('roles')->where('name','Pencari_Kerja')->value('id');
 
         // Create 5 job seekers
         for ($i = 1; $i <= 5; $i++) {

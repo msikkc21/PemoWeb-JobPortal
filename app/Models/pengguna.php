@@ -39,4 +39,49 @@ class Pengguna extends Authenticatable
     {
         return $this->belongsTo(Role::class, 'role_id');
     }
+
+    // Check if user has specific permission
+    public function hasPermission(string $permission): bool
+    {
+        return $this->role?->hasPermission($permission) ?? false;
+    }
+    // Check if user has any of the given permissions
+    public function hasAnyPermission(array $permissions): bool
+    {
+        foreach ($permissions as $permission) {
+            if ($this->hasPermission($permission)) {
+                return true;
+            }
+        }
+        return false;
+    }
+    // Check if user has all given permissions
+    public function hasAllPermissions(array $permissions): bool
+    {
+        foreach ($permissions as $permission) {
+            if (!$this->hasPermission($permission)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    // Get user's role name
+    public function getRoleName(): string
+    {
+        return $this->role?->name ?? 'No Role';
+    }
+    // Helper methods for role checking
+    public function isAdmin(): bool
+    {
+        return $this->getRoleName() === 'Administrator';
+    }
+    public function isPencariKerja(): bool
+    {
+        return $this->getRoleName() === 'Pencari_Kerja';
+    }
+    public function isPerusahaan(): bool
+    {
+        return $this->getRoleName() === 'Perusahaan';
+    }
 };
