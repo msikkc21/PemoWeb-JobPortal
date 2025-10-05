@@ -3,15 +3,64 @@ import Dropdown from '@/Components/Dropdown';
 import NavLink from '@/Components/NavLink';
 import ResponsiveNavLink from '@/Components/ResponsiveNavLink';
 import { Link, usePage } from '@inertiajs/react';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
+
+const ROLE_ID_MAP = {
+    1: 'admin',
+    2: 'jobseeker',
+    3: 'company',
+};
+
+const normaliseRoleString = (value) =>
+    value
+        ?.toString()
+        .toLowerCase()
+        .replace(/\s+/g, '_')
+        .replace(/[^a-z_]/g, '');
+
+const resolveUserRole = (user) => {
+    if (!user) return null;
+
+    const possibleRoleStrings = [
+        user.role?.name,
+        user.role?.display_name,
+        user.role_name,
+        user.role,
+        user.roleSlug,
+    ];
+
+    for (const candidate of possibleRoleStrings) {
+        const role = normaliseRoleString(candidate);
+        if (!role) continue;
+
+        if (role.includes('perusahaan') || role.includes('company')) {
+            return 'company';
+        }
+        if (role.includes('pencari') || role.includes('job')) {
+            return 'jobseeker';
+        }
+        if (role.includes('admin')) {
+            return 'admin';
+        }
+    }
+
+    if (user.role_id && ROLE_ID_MAP[user.role_id]) {
+        return ROLE_ID_MAP[user.role_id];
+    }
+
+    return null;
+};
 
 export default function AuthenticatedLayout({ header, children }) {
     const user = usePage().props.auth.user;
 
-    console.log(user);
-
     const [showingNavigationDropdown, setShowingNavigationDropdown] =
         useState(false);
+
+    const userRole = useMemo(() => resolveUserRole(user), [user]);
+    const isCompany = userRole === 'company';
+    const isJobSeeker = userRole === 'jobseeker';
+    const hasInterviewMenu = isCompany || isJobSeeker;
 
     return (
         <div className="min-h-screen bg-gray-100">
@@ -32,6 +81,22 @@ export default function AuthenticatedLayout({ header, children }) {
                                 >
                                     Dashboard
                                 </NavLink>
+                                {isCompany && (
+                                    <NavLink
+                                        href={route('company.interviews.index')}
+                                        active={route().current('company.interviews.*')}
+                                    >
+                                        Wawancara
+                                    </NavLink>
+                                )}
+                                {isJobSeeker && (
+                                    <NavLink
+                                        href={route('jobseeker.interviews.index')}
+                                        active={route().current('jobseeker.interviews.*')}
+                                    >
+                                        Wawancara Saya
+                                    </NavLink>
+                                )}
                             </div>
                         </div>
 
@@ -136,6 +201,26 @@ export default function AuthenticatedLayout({ header, children }) {
                         >
                             Dashboard
                         </ResponsiveNavLink>
+                        {hasInterviewMenu && (
+                            <div className="space-y-1">
+                                {isCompany && (
+                                    <ResponsiveNavLink
+                                        href={route('company.interviews.index')}
+                                        active={route().current('company.interviews.*')}
+                                    >
+                                        Wawancara
+                                    </ResponsiveNavLink>
+                                )}
+                                {isJobSeeker && (
+                                    <ResponsiveNavLink
+                                        href={route('jobseeker.interviews.index')}
+                                        active={route().current('jobseeker.interviews.*')}
+                                    >
+                                        Wawancara Saya
+                                    </ResponsiveNavLink>
+                                )}
+                            </div>
+                        )}
                     </div>
 
                     <div className="border-t border-gray-200 pb-1 pt-4">
