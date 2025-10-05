@@ -86,6 +86,7 @@ class CompanyProfileSeeder extends Seeder
                 'path_foto' => null,
                 'jumlah_karyawan' => $companyDetails[$detailIndex]['jumlah_karyawan'],
                 'tahun_dibentuk' => $companyDetails[$detailIndex]['tahun_dibentuk'],
+                'approve' => $faker->boolean(),
                 'dibuat_pada' => now(),
                 'diperbarui_pada' => now(),
             ]);

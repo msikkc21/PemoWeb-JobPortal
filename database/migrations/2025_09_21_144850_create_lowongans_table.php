@@ -24,6 +24,7 @@ return new class extends Migration
             $table->enum('status', ['dibuka', 'ditutup'])->default('dibuka');
             $table->date('tanggal_posting')->nullable();
             $table->date('tanggal_berakhir')->nullable();
+            $table->boolean('approve')->default(false);
             $table->timestamps();
 
             // Relasi ke tabel company

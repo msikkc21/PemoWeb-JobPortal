@@ -26,6 +26,7 @@ return new class extends Migration
             $table->string('path_foto')->nullable();
             $table->unsignedInteger('jumlah_karyawan')->nullable();
             $table->unsignedSmallInteger('tahun_dibentuk')->nullable();
+            $table->boolean('approve')->default(false);
 
             // Custom timestamps to match the model constants
             $table->timestamp('dibuat_pada')->useCurrent();

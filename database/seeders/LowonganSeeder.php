@@ -93,6 +93,7 @@ class LowonganSeeder extends Seeder
                 'status' => $lowongan['status'],
                 'tanggal_posting' => $faker->dateTimeBetween('-30 days', 'now'),
                 'tanggal_berakhir' => $faker->dateTimeBetween('+7 days', '+60 days'),
+                'approve' => $faker->boolean(),
                 'created_at' => $now,
                 'updated_at' => $now
             ]);
