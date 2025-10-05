@@ -31,6 +31,7 @@ Route::middleware('auth')->group(function () {
 
 // Admin routes
 Route::middleware(['auth', 'verified'])->prefix('admin')->name('admin.')->group(function () {
+    // Users routes
     Route::get('/users', function () {
         return Inertia::render('Admin/Users/Index', [
             'auth' => [
@@ -38,6 +39,32 @@ Route::middleware(['auth', 'verified'])->prefix('admin')->name('admin.')->group(
             ],
         ]);
     })->name('users');
+
+    // Companies routes
+    Route::get('/companies', function () {
+        return Inertia::render('Admin/Companies/Index', [
+            'auth' => [
+                'user' => Auth::user(),
+            ],
+        ]);
+    })->name('companies.index');
+
+    Route::get('/companies/pending', function () {
+        return Inertia::render('Admin/Companies/Pending', [
+            'auth' => [
+                'user' => Auth::user(),
+            ],
+        ]);
+    })->name('companies.pending');
+
+    Route::get('/companies/{id}', function ($id) {
+        return Inertia::render('Admin/Companies/Show', [
+            'auth' => [
+                'user' => Auth::user(),
+            ],
+            'id' => (int) $id
+        ]);
+    })->name('companies.show');
 });
 
 
