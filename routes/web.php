@@ -65,6 +65,32 @@ Route::middleware(['auth', 'verified'])->prefix('admin')->name('admin.')->group(
             'id' => (int) $id
         ]);
     })->name('companies.show');
+    
+    // Jobs routes
+    Route::get('/jobs', function () {
+        return Inertia::render('Admin/Jobs/Index', [
+            'auth' => [
+                'user' => Auth::user(),
+            ],
+        ]);
+    })->name('jobs.index');
+
+    Route::get('/jobs/pending', function () {
+        return Inertia::render('Admin/Jobs/Pending', [
+            'auth' => [
+                'user' => Auth::user(),
+            ],
+        ]);
+    })->name('jobs.pending');
+
+    Route::get('/jobs/{id}', function ($id) {
+        return Inertia::render('Admin/Jobs/Show', [
+            'auth' => [
+                'user' => Auth::user(),
+            ],
+            'id' => (int) $id
+        ]);
+    })->name('jobs.show');
 });
 
 
