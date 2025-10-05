@@ -23,5 +23,6 @@ class Lowongan extends Model
         'status',
         'tanggal_posting',
         'tanggal_berakhir',
+        'approve',
     ];
 }

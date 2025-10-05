@@ -10,10 +10,11 @@ return new class extends Migration
     {
         Schema::create('pengguna', function (Blueprint $table) {
             $table->id('id_pengguna'); 
-            $table->string('nama', 100); 
+            $table->string('name', 100); 
             $table->string('email', 100)->unique(); 
             $table->string('password'); 
-            $table->enum('peran', ['Admin', 'Pencari Kerja', 'Perusahaan']);
+            // $table->enum('peran', ['Admin', 'Pencari Kerja', 'Perusahaan']);
+            $table->foreignId('role_id')->constrained('roles')->onDelete('cascade');
             $table->timestamps();
         });
     }

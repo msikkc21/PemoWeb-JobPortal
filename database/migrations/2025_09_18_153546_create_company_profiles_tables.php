@@ -26,6 +26,7 @@ return new class extends Migration
             $table->string('path_foto')->nullable();
             $table->unsignedInteger('jumlah_karyawan')->nullable();
             $table->unsignedSmallInteger('tahun_dibentuk')->nullable();
+            $table->boolean('approve')->default(false);
 
             // Custom timestamps to match the model constants
             $table->timestamp('dibuat_pada')->useCurrent();
@@ -33,7 +34,7 @@ return new class extends Migration
 
             // Foreign key to users table
             $table->foreign('id_pengguna')
-                ->references('id')->on('users')
+                ->references('id_pengguna')->on('pengguna')
                 ->cascadeOnUpdate()
                 ->cascadeOnDelete();
         });

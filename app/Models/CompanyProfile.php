@@ -25,6 +25,7 @@ class CompanyProfile extends Model
         'path_foto',
         'jumlah_karyawan',
         'tahun_dibentuk',
+        'approve',
     ];
 
     protected $casts = [

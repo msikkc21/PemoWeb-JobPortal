@@ -5,9 +5,8 @@ namespace Database\Seeders;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use App\Models\JobSeekerProfile;
-use App\Models\User;
 use Faker\Factory as Faker;
-use Illuminate\Support\Arr;
+use Illuminate\Support\Facades\DB;
 
 class JobSeekerProfileSeeder extends Seeder
 {
@@ -18,23 +17,51 @@ class JobSeekerProfileSeeder extends Seeder
     {
         $faker = Faker::create('id_ID');
 
-        // Use existing users only; do not create new users
-        $userIds = User::query()->pluck('id')->all();
+        // Get all users with 'Pencari Kerja' role
+        // $jobSeekerUserIds = DB::table('pengguna')
+        //     ->where('peran', 'Pencari Kerja')
+        //     ->pluck('id_pengguna')
+        //     ->toArray();
+        $jobSeekerRoleId = DB::table('roles')->where('name','Pencari Kerja')->value('id');
+        $jobSeekerUserIds = DB::table('pengguna')->where('role_id', $jobSeekerRoleId)->pluck('id_pengguna')->toArray();
 
-        if (empty($userIds)) {
-            $this->command?->warn('JobSeekerProfileSeeder skipped: no users found to satisfy foreign key id_pengguna.');
+        if (empty($jobSeekerUserIds)) {
+            $this->command->warn('JobSeekerProfileSeeder skipped: no users with Pencari Kerja role found.');
             return;
         }
 
-        for ($i = 0; $i < 5; $i++) {
-            JobSeekerProfile::create([
-                'id_pengguna' => Arr::random($userIds),
+        // Create a job seeker profile for each user with the 'Pencari Kerja' role
+        foreach ($jobSeekerUserIds as $index => $userId) {
+            // Generate specific educational background and experience
+            $education = $faker->randomElement(['SMA', 'D3', 'S1', 'S2']);
+            
+            switch ($education) {
+                case 'SMA':
+                    $experience = "Pengalaman kerja sebagai " . $faker->jobTitle() . " selama " . $faker->numberBetween(1, 3) . " tahun.";
+                    break;
+                case 'D3':
+                    $experience = "Lulusan D3 " . $faker->randomElement(['Teknik Informatika', 'Akuntansi', 'Manajemen', 'Desain Grafis']) . 
+                                 " dengan pengalaman kerja sebagai " . $faker->jobTitle() . " selama " . $faker->numberBetween(1, 5) . " tahun.";
+                    break;
+                case 'S1':
+                    $experience = "Sarjana " . $faker->randomElement(['Teknik Informatika', 'Ekonomi', 'Hukum', 'Komunikasi', 'Psikologi']) . 
+                                 " dengan pengalaman kerja di bidang " . $faker->word() . " selama " . $faker->numberBetween(1, 7) . " tahun.";
+                    break;
+                case 'S2':
+                    $experience = "Magister " . $faker->randomElement(['Teknologi Informasi', 'Manajemen', 'Hukum Bisnis', 'Komunikasi']) . 
+                                 " dengan pengalaman kerja sebagai " . $faker->jobTitle() . " selama " . $faker->numberBetween(2, 10) . " tahun.";
+                    break;
+            }
+            
+            DB::table('jobseeker_profiles')->insert([
+                'id_pengguna' => $userId,
                 'nama' => $faker->name(),
                 'jenis_kelamin' => $faker->randomElement(['Laki-laki', 'Perempuan']),
                 'tempat_lahir' => $faker->city(),
                 'tanggal_lahir' => $faker->dateTimeBetween('-40 years', '-18 years')->format('Y-m-d'),
                 'telepon' => $faker->phoneNumber(),
                 'alamat' => $faker->address(),
+<<<<<<< HEAD
                 'pendidikan' => $faker->randomElement(['SMA', 'D3', 'S1', 'S2']),
                 'pengalaman' => $faker->paragraphs(rand(1, 3), true),
                 'deskripsi' => $faker->sentence(12),
@@ -42,6 +69,17 @@ class JobSeekerProfileSeeder extends Seeder
                 'linkedin' => 'https://www.linkedin.com/in/' . $faker->userName(),
                 'github' => 'https://github.com/' . $faker->userName(),
                 'portfolio' => 'https://' . $faker->domainName() . '/' . $faker->slug(),
+=======
+                'pendidikan' => $education,
+                'pengalaman' => $experience,
+                'deskripsi' => $faker->paragraph(3),
+                'path_foto' => null,
+                'linkedin' => 'https://www.linkedin.com/in/' . $faker->userName(),
+                'github' => $faker->optional(0.7)->url(),
+                'portfolio' => $faker->optional(0.6)->url(),
+                'dibuat_pada' => now(),
+                'diperbarui_pada' => now()
+>>>>>>> 30e7fb3476b20672f592f7fa60d6f4509fed3c9c
             ]);
         }
     }
