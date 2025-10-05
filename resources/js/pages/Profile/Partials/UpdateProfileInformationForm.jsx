@@ -14,7 +14,7 @@ export default function UpdateProfileInformation({
 
     const { data, setData, patch, errors, processing, recentlySuccessful } =
         useForm({
-            name: user.name,
+            name: user.nama,
             email: user.email,
         });
 
