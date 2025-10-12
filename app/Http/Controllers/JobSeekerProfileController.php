@@ -4,80 +4,133 @@ namespace App\Http\Controllers;
 
 use App\Models\JobSeekerProfile;
 use Illuminate\Http\Request;
-use Inertia\Inertia;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
+use Inertia\Inertia;
 
 class JobSeekerProfileController extends Controller
 {
+    // Menampilkan profil user yang login
     public function index()
     {
-        $profiles = JobSeekerProfile::all();
-        return Inertia::render('JobSeekers/Index', [
-            'profiles' => $profiles
+        $profile = JobSeekerProfile::where('id_pengguna', Auth::id())->first();
+
+        return Inertia::render('JobSeekerProfiles/Index', [
+            'profile' => $profile,
         ]);
     }
 
+    // Form membuat profil baru
     public function create()
     {
-        return Inertia::render('JobSeekers/Create');
+        return Inertia::render('JobSeekerProfiles/Create');
     }
 
+    // Simpan profil baru
     public function store(Request $request)
     {
-        $data = $request->validate([
+        $validated = $request->validate([
             'nama' => 'required|string|max:255',
-            'jenis_kelamin' => 'nullable|string',
-            'telepon' => 'nullable|string',
+            'jenis_kelamin' => 'nullable|string|max:50',
+            'tempat_lahir' => 'nullable|string|max:100',
+            'tanggal_lahir' => 'nullable|date',
+            'telepon' => 'nullable|string|max:20',
             'alamat' => 'nullable|string',
-            'pendidikan' => 'nullable|string',
+            'pendidikan' => 'nullable|string|max:255',
             'pengalaman' => 'nullable|string',
-            'resume' => 'nullable|file|mimes:pdf,doc,docx',
+            'deskripsi' => 'nullable|string',
+            'linkedin' => 'nullable|url',
+            'github' => 'nullable|url',
+            'portfolio' => 'nullable|url',
         ]);
 
-        // Simpan resume
-        if ($request->hasFile('resume')) {
-            $data['path_resume'] = $request->file('resume')->store('resumes', 'public');
-        }
+        $validated['id_pengguna'] = Auth::id();
 
-        JobSeekerProfile::create($data);
-        return redirect()->route('jobseekers.index')->with('success', 'Profil berhasil dibuat.');
+        JobSeekerProfile::create($validated);
+
+        return redirect()->route('jobseeker_profiles.index')
+            ->with('success', 'Profil pencari kerja berhasil dibuat.');
     }
 
+    // Form edit profil
     public function edit($id)
     {
         $profile = JobSeekerProfile::findOrFail($id);
-        return Inertia::render('JobSeekers/Edit', ['profile' => $profile]);
+        $this->authorize('update', $profile);
+
+        return Inertia::render('JobSeekerProfiles/Edit', [
+            'profile' => $profile,
+        ]);
     }
 
+    // Update profil
     public function update(Request $request, $id)
     {
         $profile = JobSeekerProfile::findOrFail($id);
-        $data = $request->validate([
+        $this->authorize('update', $profile);
+
+        $validated = $request->validate([
             'nama' => 'required|string|max:255',
-            'telepon' => 'nullable|string',
+            'jenis_kelamin' => 'nullable|string|max:50',
+            'tempat_lahir' => 'nullable|string|max:100',
+            'tanggal_lahir' => 'nullable|date',
+            'telepon' => 'nullable|string|max:20',
             'alamat' => 'nullable|string',
+            'pendidikan' => 'nullable|string|max:255',
+            'pengalaman' => 'nullable|string',
+            'deskripsi' => 'nullable|string',
+            'linkedin' => 'nullable|url',
+            'github' => 'nullable|url',
+            'portfolio' => 'nullable|url',
         ]);
-        $profile->update($data);
-        return redirect()->route('jobseekers.index')->with('success', 'Profil diperbarui.');
+
+        $profile->update($validated);
+
+        return redirect()->route('jobseeker_profiles.index')
+            ->with('success', 'Profil berhasil diperbarui.');
     }
 
-    public function destroy($id)
+    // Upload resume (PDF/DOC)
+    public function uploadResume(Request $request)
     {
-        $profile = JobSeekerProfile::findOrFail($id);
-        $profile->delete();
-        return redirect()->route('jobseekers.index')->with('success', 'Profil dihapus.');
+        $request->validate([
+            'resume' => 'required|file|mimes:pdf,doc,docx|max:5120',
+        ]);
+
+        $profile = JobSeekerProfile::where('id_pengguna', Auth::id())->firstOrFail();
+
+        $path = $request->file('resume')->store('resumes', 'public');
+
+        // Simulasi parsing resume (bisa diganti dengan NLP atau PDF parser)
+        $resumeText = $this->parseResume($request->file('resume')->getRealPath());
+
+        // Simpan hasil parsing ke kolom 'pengalaman' atau 'deskripsi'
+        $profile->update([
+            'path_foto' => $path,
+            'deskripsi' => $resumeText,
+        ]);
+
+        return redirect()->route('jobseeker_profiles.index')
+            ->with('success', 'Resume berhasil diupload dan diparsing.');
     }
 
-    // Parsing resume sederhana
-    public function parseResume($id)
+    // Parsing resume sederhana (ekstrak teks)
+    private function parseResume($filePath)
     {
-        $profile = JobSeekerProfile::findOrFail($id);
-        if (!$profile->path_resume) {
-            return response()->json(['error' => 'Resume belum diunggah'], 404);
+        $extension = pathinfo($filePath, PATHINFO_EXTENSION);
+        $text = '';
+
+        if ($extension === 'pdf') {
+            try {
+                $text = shell_exec("pdftotext '$filePath' -");
+            } catch (\Exception $e) {
+                $text = 'Gagal membaca file PDF.';
+            }
+        } else {
+            $text = file_get_contents($filePath);
         }
 
-        $filePath = storage_path("app/public/{$profile->path_resume}");
-        $text = file_get_contents($filePath); // Bisa ganti dengan parser seperti `smalot/pdfparser`
-        return response()->json(['parsed' => substr($text, 0, 1000)]);
+        // Ambil hanya beberapa baris pertama
+        return substr(trim($text), 0, 500);
     }
 }

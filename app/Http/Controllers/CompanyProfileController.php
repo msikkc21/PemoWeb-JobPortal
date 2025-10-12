@@ -5,57 +5,86 @@ namespace App\Http\Controllers;
 use App\Models\CompanyProfile;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
+use Illuminate\Support\Facades\Auth;
 
 class CompanyProfileController extends Controller
 {
+    // Tampilkan profil perusahaan user yang login
     public function index()
     {
-        $companies = CompanyProfile::all();
-        return Inertia::render('Companies/Index', [
-            'companies' => $companies
+        $profile = CompanyProfile::where('id_pengguna', Auth::id())->first();
+
+        return Inertia::render('CompanyProfiles/Index', [
+            'profile' => $profile,
         ]);
     }
 
+    // Tampilkan form create
     public function create()
     {
-        return Inertia::render('Companies/Create');
+        return Inertia::render('CompanyProfiles/Create');
     }
 
+    // Simpan data baru
     public function store(Request $request)
     {
-        $data = $request->validate([
+        $validated = $request->validate([
             'nama_perusahaan' => 'required|string|max:255',
-            'industri' => 'nullable|string',
-            'lokasi' => 'nullable|string',
-            'email_perusahaan' => 'nullable|email',
+            'industri' => 'nullable|string|max:255',
+            'deskripsi' => 'nullable|string',
+            'lokasi' => 'nullable|string|max:255',
+            'website' => 'nullable|url|max:255',
+            'email_perusahaan' => 'nullable|email|max:255',
+            'telepon' => 'nullable|string|max:20',
+            'alamat' => 'nullable|string',
+            'jumlah_karyawan' => 'nullable|integer',
+            'tahun_dibentuk' => 'nullable|integer',
         ]);
 
-        CompanyProfile::create($data);
-        return redirect()->route('companies.index')->with('success', 'Profil perusahaan dibuat.');
+        $validated['id_pengguna'] = Auth::id();
+        $validated['approve'] = false;
+
+        CompanyProfile::create($validated);
+
+        return redirect()->route('company_profiles.index')
+            ->with('success', 'Profil perusahaan berhasil dibuat.');
     }
 
+    // Tampilkan form edit
     public function edit($id)
     {
-        $company = CompanyProfile::findOrFail($id);
-        return Inertia::render('Companies/Edit', ['company' => $company]);
+        $profile = CompanyProfile::findOrFail($id);
+
+        $this->authorize('update', $profile);
+
+        return Inertia::render('CompanyProfiles/Edit', [
+            'profile' => $profile,
+        ]);
     }
 
+    // Update data
     public function update(Request $request, $id)
     {
-        $company = CompanyProfile::findOrFail($id);
-        $data = $request->validate([
-            'nama_perusahaan' => 'required|string|max:255',
-            'industri' => 'nullable|string',
-            'lokasi' => 'nullable|string',
-        ]);
-        $company->update($data);
-        return redirect()->route('companies.index')->with('success', 'Profil perusahaan diperbarui.');
-    }
+        $profile = CompanyProfile::findOrFail($id);
 
-    public function destroy($id)
-    {
-        $company = CompanyProfile::findOrFail($id);
-        $company->delete();
-        return redirect()->route('companies.index')->with('success', 'Profil perusahaan dihapus.');
+        $this->authorize('update', $profile);
+
+        $validated = $request->validate([
+            'nama_perusahaan' => 'required|string|max:255',
+            'industri' => 'nullable|string|max:255',
+            'deskripsi' => 'nullable|string',
+            'lokasi' => 'nullable|string|max:255',
+            'website' => 'nullable|url|max:255',
+            'email_perusahaan' => 'nullable|email|max:255',
+            'telepon' => 'nullable|string|max:20',
+            'alamat' => 'nullable|string',
+            'jumlah_karyawan' => 'nullable|integer',
+            'tahun_dibentuk' => 'nullable|integer',
+        ]);
+
+        $profile->update($validated);
+
+        return redirect()->route('company_profiles.index')
+            ->with('success', 'Profil perusahaan berhasil diperbarui.');
     }
 }

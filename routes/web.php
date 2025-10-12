@@ -4,6 +4,8 @@ use App\Http\Controllers\ProfileController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
+use App\Http\Controllers\CompanyProfileController;
+use App\Http\Controllers\JobSeekerProfileController;
 
 // Route::get('/', function () {
 //     return Inertia::render('Welcome', [
@@ -21,31 +23,6 @@ Route::get('/', function () {
 Route::get('/dashboard', function () {
     return Inertia::render('Dashboard');
 })->middleware(['auth', 'verified'])->name('dashboard');
-
-//---- aku (zidnan) nambah ini
-use App\Http\Controllers\JobSeekerProfileController;
-use App\Http\Controllers\CompanyProfileController;
-
-Route::middleware(['auth'])->group(function () {
-    // Job Seeker CRUD
-    Route::get('/jobseekers', [JobSeekerProfileController::class, 'index'])->name('jobseekers.index');
-    Route::get('/jobseekers/create', [JobSeekerProfileController::class, 'create'])->name('jobseekers.create');
-    Route::post('/jobseekers', [JobSeekerProfileController::class, 'store'])->name('jobseekers.store');
-    Route::get('/jobseekers/{id}/edit', [JobSeekerProfileController::class, 'edit'])->name('jobseekers.edit');
-    Route::put('/jobseekers/{id}', [JobSeekerProfileController::class, 'update'])->name('jobseekers.update');
-    Route::delete('/jobseekers/{id}', [JobSeekerProfileController::class, 'destroy'])->name('jobseekers.destroy');
-    Route::get('/jobseekers/{id}/parse', [JobSeekerProfileController::class, 'parseResume'])->name('jobseekers.parse');
-
-    // Company CRUD
-    Route::get('/companies', [CompanyProfileController::class, 'index'])->name('companies.index');
-    Route::get('/companies/create', [CompanyProfileController::class, 'create'])->name('companies.create');
-    Route::post('/companies', [CompanyProfileController::class, 'store'])->name('companies.store');
-    Route::get('/companies/{id}/edit', [CompanyProfileController::class, 'edit'])->name('companies.edit');
-    Route::put('/companies/{id}', [CompanyProfileController::class, 'update'])->name('companies.update');
-    Route::delete('/companies/{id}', [CompanyProfileController::class, 'destroy'])->name('companies.destroy');
-});
-
-//-----------------------------
 
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
@@ -71,5 +48,26 @@ Route::middleware(['auth', 'permission:upload_resume'])->group(function () {
         return '<h1>Upload Resume</h1>';
     })->name('upload_resume');
 });
+
+//------zidnan-------
+Route::middleware(['auth'])->group(function () {
+    Route::get('/company-profile', [CompanyProfileController::class, 'index'])->name('company_profiles.index');
+    Route::get('/company-profile/create', [CompanyProfileController::class, 'create'])->name('company_profiles.create');
+    Route::post('/company-profile', [CompanyProfileController::class, 'store'])->name('company_profiles.store');
+    Route::get('/company-profile/{id}/edit', [CompanyProfileController::class, 'edit'])->name('company_profiles.edit');
+    Route::put('/company-profile/{id}', [CompanyProfileController::class, 'update'])->name('company_profiles.update');
+});
+
+
+Route::middleware(['auth'])->group(function () {
+    Route::get('/jobseeker-profile', [JobSeekerProfileController::class, 'index'])->name('jobseeker_profiles.index');
+    Route::get('/jobseeker-profile/create', [JobSeekerProfileController::class, 'create'])->name('jobseeker_profiles.create');
+    Route::post('/jobseeker-profile', [JobSeekerProfileController::class, 'store'])->name('jobseeker_profiles.store');
+    Route::get('/jobseeker-profile/{id}/edit', [JobSeekerProfileController::class, 'edit'])->name('jobseeker_profiles.edit');
+    Route::put('/jobseeker-profile/{id}', [JobSeekerProfileController::class, 'update'])->name('jobseeker_profiles.update');
+    Route::post('/jobseeker-profile/upload-resume', [JobSeekerProfileController::class, 'uploadResume'])->name('jobseeker_profiles.upload_resume');
+});
+
+//----------------------
 
 require __DIR__.'/auth.php';
