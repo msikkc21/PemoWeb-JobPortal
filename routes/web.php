@@ -1,9 +1,10 @@
 <?php
 
-use App\Http\Controllers\ProfileController;
-use Illuminate\Foundation\Application;
-use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
+use Illuminate\Support\Facades\Route;
+use Illuminate\Foundation\Application;
+use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\LowonganController;
 
 // Route::get('/', function () {
 //     return Inertia::render('Welcome', [
@@ -45,6 +46,14 @@ Route::middleware(['auth', 'permission:upload_resume'])->group(function () {
     Route::get('/upload_resume', function() {
         return '<h1>Upload Resume</h1>';
     })->name('upload_resume');
+});
+
+Route::middleware(['auth', 'permission:view_jobs'])->group(function () {
+    Route::get('/view_jobs', [LowonganController::class, 'index'])->name('jobs.index');
+    Route::get('/view_jobs/{job}', [LowonganController::class, 'show'])->name('jobs.show');
+    Route::get('/view_jobs/{job}/edit', [LowonganController::class, 'edit'])->name('jobs.edit');
+    Route::delete('/view_jobs/{job}', [LowonganController::class, 'destroy'])->name('jobs.destroy');
+    Route::post('/view_jobs/{job}/apply', [LowonganController::class, 'apply'])->name('jobs.apply');
 });
 
 require __DIR__.'/auth.php';
