@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\ProfileController;
 use Illuminate\Foundation\Application;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 use App\Http\Controllers\CompanyProfileController;
@@ -28,6 +29,70 @@ Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+});
+
+// Admin routes
+Route::middleware(['auth', 'verified'])->prefix('admin')->name('admin.')->group(function () {
+    // Users routes
+    Route::get('/users', function () {
+        return Inertia::render('Admin/Users/Index', [
+            'auth' => [
+                'user' => Auth::user(),
+            ],
+        ]);
+    })->name('users');
+
+    // Companies routes
+    Route::get('/companies', function () {
+        return Inertia::render('Admin/Companies/Index', [
+            'auth' => [
+                'user' => Auth::user(),
+            ],
+        ]);
+    })->name('companies.index');
+
+    Route::get('/companies/pending', function () {
+        return Inertia::render('Admin/Companies/Pending', [
+            'auth' => [
+                'user' => Auth::user(),
+            ],
+        ]);
+    })->name('companies.pending');
+
+    Route::get('/companies/{id}', function ($id) {
+        return Inertia::render('Admin/Companies/Show', [
+            'auth' => [
+                'user' => Auth::user(),
+            ],
+            'id' => (int) $id
+        ]);
+    })->name('companies.show');
+    
+    // Jobs routes
+    Route::get('/jobs', function () {
+        return Inertia::render('Admin/Jobs/Index', [
+            'auth' => [
+                'user' => Auth::user(),
+            ],
+        ]);
+    })->name('jobs.index');
+
+    Route::get('/jobs/pending', function () {
+        return Inertia::render('Admin/Jobs/Pending', [
+            'auth' => [
+                'user' => Auth::user(),
+            ],
+        ]);
+    })->name('jobs.pending');
+
+    Route::get('/jobs/{id}', function ($id) {
+        return Inertia::render('Admin/Jobs/Show', [
+            'auth' => [
+                'user' => Auth::user(),
+            ],
+            'id' => (int) $id
+        ]);
+    })->name('jobs.show');
 });
 
 
