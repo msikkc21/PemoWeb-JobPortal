@@ -1,53 +1,98 @@
 import React from 'react';
 import { useForm, Link } from '@inertiajs/react';
+import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
+import { Head } from '@inertiajs/react';
+import InputLabel from '@/Components/InputLabel';
+import TextInput from '@/Components/TextInput';
+import InputError from '@/Components/InputError';
+import PrimaryButton from '@/Components/PrimaryButton';
+import SecondaryButton from '@/Components/SecondaryButton';
 
-export default function Create() {
+export default function Create({ auth }) {
   const { data, setData, post, processing, errors } = useForm({
-    nama_perusahaan: '',
-    industri: '',
-    deskripsi: '',
-    lokasi: '',
+    company_name: '',
+    industry: '',
+    description: '',
+    location: '',
     website: '',
-    email_perusahaan: '',
-    telepon: '',
-    alamat: '',
-    jumlah_karyawan: '',
-    tahun_dibentuk: '',
+    company_email: '',
+    phone: '',
+    address: '',
+    employee_count: '',
+    founded_year: '',
   });
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    post(route('company_profiles.store'));
+    post(route('company_profiles.store'), { preserveScroll: true });
+  };
+
+  const fieldLabels = {
+    company_name: 'Nama Perusahaan',
+    industry: 'Industri',
+    description: 'Deskripsi',
+    location: 'Lokasi',
+    website: 'Website',
+    company_email: 'Email Perusahaan',
+    phone: 'Telepon',
+    address: 'Alamat',
+    employee_count: 'Jumlah Karyawan',
+    founded_year: 'Tahun Berdiri',
   };
 
   return (
-    <div className="p-6 max-w-3xl mx-auto">
-      <h1 className="text-2xl font-bold mb-4">Buat Profil Perusahaan</h1>
-      <form onSubmit={handleSubmit} className="space-y-4">
-        {Object.keys(data).map((field) => (
-          <div key={field}>
-            <label className="block font-semibold capitalize">{field.replace('_', ' ')}</label>
-            <input
-              type="text"
-              value={data[field] || ''}
-              onChange={(e) => setData(field, e.target.value)}
-              className="w-full border p-2 rounded"
-            />
-            {errors[field] && <div className="text-red-500 text-sm">{errors[field]}</div>}
-          </div>
-        ))}
+    <AuthenticatedLayout
+      user={auth.user}
+      header={<h2 className="text-xl font-semibold leading-tight text-gray-800">Lengkapi Profil Perusahaan</h2>}
+    >
+      <Head title="Lengkapi Profil Perusahaan" />
 
-        <button
-          type="submit"
-          disabled={processing}
-          className="bg-blue-600 text-white px-4 py-2 rounded"
-        >
-          Simpan
-        </button>
-        <Link href={route('company_profiles.index')} className="ml-3 text-gray-600 hover:underline">
-          Batal
-        </Link>
-      </form>
-    </div>
+      <div className="py-6">
+        <div className="mx-auto max-w-7xl sm:px-6 lg:px-8">
+          <div className="bg-white overflow-hidden shadow-sm sm:rounded-lg">
+            <div className="p-6 text-gray-900">
+              <form onSubmit={handleSubmit} className="space-y-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                  {Object.keys(data).map((field) => (
+                    <div key={field} className={field === 'description' || field === 'address' ? 'sm:col-span-2' : ''}>
+                      <InputLabel htmlFor={field} value={fieldLabels[field]} />
+                      {field === 'description' || field === 'address' ? (
+                        <textarea
+                          id={field}
+                          value={data[field] || ''}
+                          onChange={(e) => setData(field, e.target.value)}
+                          className="mt-1 block w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm"
+                          rows="4"
+                        />
+                      ) : (
+                        <TextInput
+                          id={field}
+                          type={field === 'company_email' ? 'email' : field === 'employee_count' || field === 'founded_year' ? 'number' : 'text'}
+                          value={data[field] || ''}
+                          onChange={(e) => setData(field, e.target.value)}
+                          className="mt-1 block w-full"
+                        />
+                      )}
+                      <InputError message={errors[field]} className="mt-2" />
+                    </div>
+                  ))}
+                </div>
+
+                <div className="flex items-center gap-4">
+                  <PrimaryButton disabled={processing}>
+                    Simpan
+                  </PrimaryButton>
+                  <Link href={route('company_profiles.index')}>
+                    <SecondaryButton type="button">
+                      Batal
+                    </SecondaryButton>
+                  </Link>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+    </AuthenticatedLayout>
   );
 }

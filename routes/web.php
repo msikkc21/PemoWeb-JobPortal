@@ -22,6 +22,47 @@ Route::middleware('auth')->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 
+// ==========================================
+// Company Routes - Dengan Proteksi Permission Penuh
+// ==========================================
+Route::middleware(['auth'])->prefix('company')->group(function () {
+    
+    // Profile Management Routes
+    Route::name('company_profiles.')->group(function () {
+        // View company profile (permission: view_company_profiles)
+        Route::get('/', [CompanyProfileController::class, 'index'])
+            ->middleware('permission:view_company_profiles')
+            ->name('index');
+        
+        // Create company profile (permission: create_company_profile)
+        Route::get('/create', [CompanyProfileController::class, 'create'])
+            ->middleware('permission:create_company_profile')
+            ->name('create');
+        
+        // Store company profile (permission: create_company_profile)
+        Route::post('/', [CompanyProfileController::class, 'store'])
+            ->middleware('permission:create_company_profile')
+            ->name('store');
+        
+        // Edit company profile (permission: edit_company_profile)
+        Route::get('/edit', [CompanyProfileController::class, 'edit'])
+            ->middleware('permission:edit_company_profile')
+            ->name('edit');
+        
+        // Update company profile (permission: edit_company_profile)
+        Route::put('/update', [CompanyProfileController::class, 'update'])
+            ->middleware('permission:edit_company_profile')
+            ->name('update');
+    });
+    
+    // Dashboard Route (memerlukan profile completed)
+    Route::middleware(['company.profile.completed', 'permission:view_company_profiles'])
+        ->name('company.')
+        ->group(function () {
+            Route::get('/dashboard', [CompanyProfileController::class, 'dashboard'])->name('dashboard');
+        });
+});
+
 // // Admin routes
 // Route::middleware(['auth', 'verified'])->prefix('admin')->name('admin.')->group(function () {
 //     // Users routes

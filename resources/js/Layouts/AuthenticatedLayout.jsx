@@ -8,11 +8,13 @@ import { useState } from 'react';
 export default function AuthenticatedLayout({ header, children }) {
     const user = usePage().props.auth.user;
 
-    console.log(user);
-
     const [showingNavigationDropdown, setShowingNavigationDropdown] =
         useState(false);
 
+    const isCompany = user?.role?.name === 'Perusahaan' || user?.role?.name === 'Company';
+
+    console.log(user?.role?.name);
+    console.log(isCompany);
     return (
         <div className="min-h-screen bg-gray-100">
             <nav className="border-b border-gray-100 bg-white">
@@ -26,12 +28,41 @@ export default function AuthenticatedLayout({ header, children }) {
                             </div>
 
                             <div className="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
-                                <NavLink
-                                    href={route('dashboard')}
-                                    active={route().current('dashboard')}
-                                >
-                                    Dashboard
-                                </NavLink>
+                                {isCompany ? (
+                                    <>
+                                        <NavLink
+                                            href={route('company.dashboard')}
+                                            active={route().current('company.dashboard')}
+                                        >
+                                            Dashboard
+                                        </NavLink>
+                                        <NavLink
+                                            href={route('company_profiles.index')}
+                                            active={route().current('company_profiles.*')}
+                                        >
+                                            Profil Perusahaan
+                                        </NavLink>
+                                        <NavLink
+                                            href="#"
+                                            active={false}
+                                        >
+                                            Lowongan
+                                        </NavLink>
+                                        <NavLink
+                                            href="#"
+                                            active={false}
+                                        >
+                                            Pelamar
+                                        </NavLink>
+                                    </>
+                                ) : (
+                                    <NavLink
+                                        href={route('dashboard')}
+                                        active={route().current('dashboard')}
+                                    >
+                                        Dashboard
+                                    </NavLink>
+                                )}
                             </div>
                         </div>
 
@@ -130,12 +161,41 @@ export default function AuthenticatedLayout({ header, children }) {
                     }
                 >
                     <div className="space-y-1 pb-3 pt-2">
-                        <ResponsiveNavLink
-                            href={route('dashboard')}
-                            active={route().current('dashboard')}
-                        >
-                            Dashboard
-                        </ResponsiveNavLink>
+                        {isCompany ? (
+                            <>
+                                <ResponsiveNavLink
+                                    href={route('company.dashboard')}
+                                    active={route().current('company.dashboard')}
+                                >
+                                    Dashboard
+                                </ResponsiveNavLink>
+                                <ResponsiveNavLink
+                                    href={route('company_profiles.index')}
+                                    active={route().current('company_profiles.*')}
+                                >
+                                    Profil Perusahaan
+                                </ResponsiveNavLink>
+                                <ResponsiveNavLink
+                                    href="#"
+                                    active={false}
+                                >
+                                    Lowongan
+                                </ResponsiveNavLink>
+                                <ResponsiveNavLink
+                                    href="#"
+                                    active={false}
+                                >
+                                    Pelamar
+                                </ResponsiveNavLink>
+                            </>
+                        ) : (
+                            <ResponsiveNavLink
+                                href={route('dashboard')}
+                                active={route().current('dashboard')}
+                            >
+                                Dashboard
+                            </ResponsiveNavLink>
+                        )}
                     </div>
 
                     <div className="border-t border-gray-200 pb-1 pt-4">

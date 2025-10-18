@@ -33,7 +33,33 @@ class AuthenticatedSessionController extends Controller
 
         $request->session()->regenerate();
 
-        return redirect()->intended(route('dashboard', absolute: false));
+        $user = Auth::user();
+        $roleName = $user->role?->name;
+
+        // Check if user is a company
+        if (in_array($roleName, ['Perusahaan', 'Company'])) {
+            $profile = \App\Models\CompanyProfile::where('user_id', $user->id)->first();
+            
+            // Check if profile is complete
+            $isComplete = $profile && 
+                         !empty($profile->company_name) && 
+                         !empty($profile->industry) && 
+                         !empty($profile->location);
+
+            if (!$isComplete) {
+                return redirect()->route('company_profiles.create')
+                    ->with('info', 'Silakan lengkapi profil perusahaan Anda.');
+            }
+
+            return redirect()->route('company.dashboard');
+        }
+
+        // Double-check using isCompany() method for any edge cases
+        if ($user && method_exists($user, 'isCompany') && $user->isCompany()) {
+            return redirect()->route('company.dashboard');
+        }
+
+        return redirect()->intended(route('dashboard'));
     }
 
     /**

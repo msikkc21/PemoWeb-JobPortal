@@ -99,18 +99,18 @@ class User extends Authenticatable
     }
 
     // Helper methods for role checking
-    public function isAdmin(): bool
+    public function isCompany(): bool
     {
-        return $this->getRoleName() === 'Admin';
+        return in_array($this->role?->name, ['Perusahaan', 'Company']);
     }
 
     public function isJobSeeker(): bool
     {
-        return $this->getRoleName() === 'Pencari_Kerja';
+        return in_array($this->role?->name, ['Pencari_Kerja', 'Job_Seeker', 'JobSeeker']);
     }
 
-    public function isCompany(): bool
+    public function isAdmin(): bool
     {
-        return $this->getRoleName() === 'Perusahaan';
+        return in_array($this->role?->name, ['Admin', 'Administrator']);
     }
 }

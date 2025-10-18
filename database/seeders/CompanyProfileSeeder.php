@@ -5,7 +5,7 @@ namespace Database\Seeders;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use App\Models\CompanyProfile;
-use App\Models\Pengguna;
+use App\Models\User;
 use Faker\Factory as Faker;
 use Illuminate\Support\Facades\DB;
 
