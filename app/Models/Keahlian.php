@@ -9,11 +9,12 @@ class Keahlian extends Model
 {
     use HasFactory;
 
-    protected $table = 'keahlian';
+    protected $table = 'keahlians';
+    protected $primaryKey = 'skill_id';
 
     protected $fillable = [
-        'nama_keahlian',
-        'kategori',
-        'deskripsi',
+        'skill_name',
+        'category',
+        'description',
     ];
 }

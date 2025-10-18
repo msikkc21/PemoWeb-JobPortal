@@ -3,35 +3,38 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class CompanyProfile extends Model
 {
     protected $table = 'company_profiles';
-    protected $primaryKey = 'id_perusahaan';
-
-    const CREATED_AT = 'dibuat_pada';
-    const UPDATED_AT = 'diperbarui_pada';
 
     protected $fillable = [
-        'id_pengguna',
-        'nama_perusahaan',
-        'industri',
-        'deskripsi',
-        'lokasi',
+        'user_id',
+        'company_name',
+        'industry',
+        'description',
+        'location',
         'website',
-        'email_perusahaan',
-        'telepon',
-        'alamat',
-        'path_foto',
-        'jumlah_karyawan',
-        'tahun_dibentuk',
-        'approve',
+        'company_email',
+        'phone',
+        'address',
+        'photo_path',
+        'employee_count',
+        'founded_year',
+        'is_approved',
     ];
 
     protected $casts = [
-        'jumlah_karyawan' => 'integer',
-        'tahun_dibentuk' => 'integer',
-        'dibuat_pada' => 'datetime',
-        'diperbarui_pada' => 'datetime',
+        'employee_count' => 'integer',
+        'founded_year' => 'integer',
+        'is_approved' => 'boolean',
+        'created_at' => 'datetime',
+        'updated_at' => 'datetime',
     ];
+
+    public function user()
+    {
+        return $this->belongsTo(User::class, 'user_id');
+    }
 }

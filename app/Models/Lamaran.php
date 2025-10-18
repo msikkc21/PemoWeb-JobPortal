@@ -11,30 +11,33 @@ class Lamaran extends Model
     use HasFactory;
 
     protected $table = 'lamarans';
-
-    protected $primaryKey = 'id_lamaran';
+    protected $primaryKey = 'application_id';
 
     protected $fillable = [
-        'id_lowongan',
-        'id_pencari',
-        'id_resume',
+        'job_id',
+        'jobseeker_id',
+        'resume_id',
         'status',
-        'tanggal_lamaran',
-        'catatan',
+        'application_date',
+        'notes',
+    ];
+
+    protected $casts = [
+        'application_date' => 'date',
     ];
 
     public function lowongan()
     {
-        return $this->belongsTo(Lowongan::class, 'id_lowongan', 'id_lowongan');
+        return $this->belongsTo(Lowongan::class, 'job_id', 'job_id');
     }
 
-    public function pencari()
+    public function jobseeker()
     {
-        return $this->belongsTo(JobSeekerProfile::class, 'id_pencari', 'id_pencari');
+        return $this->belongsTo(JobSeekerProfile::class, 'jobseeker_id', 'jobseeker_id');
     }
 
     public function resume()
     {
-        return $this->belongsTo(Resume::class, 'id_resume', 'id_resume');
+        return $this->belongsTo(Resume::class, 'resume_id', 'resume_id');
     }
 }

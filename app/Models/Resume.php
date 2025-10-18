@@ -9,15 +9,24 @@ class Resume extends Model
 {
     use HasFactory;
 
-    protected $table = 'resume'; // nama tabel
-    protected $primaryKey = 'id_resume'; // primary key
+    protected $table = 'resume';
+    protected $primaryKey = 'resume_id';
 
-    public $timestamps = false; // karena tabel tidak ada created_at & updated_at
+    public $timestamps = false;
 
     protected $fillable = [
-        'id_pencari',
-        'file_cv',
-        'data_parsing',
-        'tanggal_upload',
+        'jobseeker_id',
+        'cv_file',
+        'parsed_data',
+        'upload_date',
     ];
+
+    protected $casts = [
+        'upload_date' => 'date',
+    ];
+
+    public function jobseeker()
+    {
+        return $this->belongsTo(JobSeekerProfile::class, 'jobseeker_id', 'jobseeker_id');
+    }
 }

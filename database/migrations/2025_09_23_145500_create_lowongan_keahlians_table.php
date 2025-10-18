@@ -9,18 +9,10 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('lowongan_keahlians', function (Blueprint $table) {
-            $table->unsignedBigInteger('id_lowongan');
-            $table->unsignedBigInteger('id_keahlian');
+            $table->foreignId('job_id')->constrained('lowongans', 'job_id')->onDelete('cascade');
+            $table->foreignId('skill_id')->constrained('keahlians', 'skill_id')->onDelete('cascade');
 
-            $table->foreign('id_lowongan')
-                  ->references('id_lowongan')->on('lowongans')
-                  ->onDelete('cascade');
-
-            $table->foreign('id_keahlian')
-                  ->references('id')->on('keahlians')
-                  ->onDelete('cascade');
-            $table->primary(['id_lowongan', 'id_keahlian']); 
-            
+            $table->primary(['job_id', 'skill_id']); 
         });
     }
 

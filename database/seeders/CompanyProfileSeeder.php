@@ -20,7 +20,7 @@ class CompanyProfileSeeder extends Seeder
 
         // Get all users with 'Perusahaan' role
         $companyRoleId = DB::table('roles')->where('name', 'Perusahaan')->value('id');
-        $companyUserIds = DB::table('pengguna')->where('role_id', $companyRoleId)->pluck('id_pengguna')->toArray();
+        $companyUserIds = DB::table('users')->where('role_id', $companyRoleId)->pluck('id')->toArray();
 
         if (empty($companyUserIds)) {
             $this->command->warn('CompanyProfileSeeder skipped: no users with Perusahaan role found.');
@@ -30,40 +30,40 @@ class CompanyProfileSeeder extends Seeder
         // Company details with specific data for each company
         $companyDetails = [
             [
-                'nama_perusahaan' => 'PT Teknologi Maju',
-                'industri' => 'Teknologi',
-                'deskripsi' => 'Perusahaan teknologi yang berfokus pada pengembangan software dan solusi IT untuk bisnis.',
-                'lokasi' => 'Jakarta, Indonesia',
+                'company_name' => 'PT Teknologi Maju',
+                'industry' => 'Teknologi',
+                'description' => 'Perusahaan teknologi yang berfokus pada pengembangan software dan solusi IT untuk bisnis.',
+                'location' => 'Jakarta, Indonesia',
                 'website' => 'https://teknologimaju.id',
-                'email_perusahaan' => 'info@teknologimaju.id',
-                'telepon' => '021-5551234',
-                'alamat' => 'Jl. Sudirman No. 123, Jakarta Pusat',
-                'jumlah_karyawan' => 250,
-                'tahun_dibentuk' => 2010,
+                'company_email' => 'info@teknologimaju.id',
+                'phone' => '021-5551234',
+                'address' => 'Jl. Sudirman No. 123, Jakarta Pusat',
+                'employee_count' => 250,
+                'founded_year' => 2010,
             ],
             [
-                'nama_perusahaan' => 'CV Desain Kreatif',
-                'industri' => 'Kreatif',
-                'deskripsi' => 'Studio desain yang menyediakan jasa desain grafis, UI/UX, dan branding untuk berbagai klien.',
-                'lokasi' => 'Bandung, Indonesia',
+                'company_name' => 'CV Desain Kreatif',
+                'industry' => 'Kreatif',
+                'description' => 'Studio desain yang menyediakan jasa desain grafis, UI/UX, dan branding untuk berbagai klien.',
+                'location' => 'Bandung, Indonesia',
                 'website' => 'https://desainkreatif.com',
-                'email_perusahaan' => 'hello@desainkreatif.com',
-                'telepon' => '022-7891234',
-                'alamat' => 'Jl. Dago No. 45, Bandung',
-                'jumlah_karyawan' => 30,
-                'tahun_dibentuk' => 2015,
+                'company_email' => 'hello@desainkreatif.com',
+                'phone' => '022-7891234',
+                'address' => 'Jl. Dago No. 45, Bandung',
+                'employee_count' => 30,
+                'founded_year' => 2015,
             ],
             [
-                'nama_perusahaan' => 'PT Global Inovasi',
-                'industri' => 'Konsultasi',
-                'deskripsi' => 'Perusahaan konsultan manajemen dan teknologi informasi yang melayani klien dari berbagai industri.',
-                'lokasi' => 'Surabaya, Indonesia',
+                'company_name' => 'PT Global Inovasi',
+                'industry' => 'Konsultasi',
+                'description' => 'Perusahaan konsultan manajemen dan teknologi informasi yang melayani klien dari berbagai industri.',
+                'location' => 'Surabaya, Indonesia',
                 'website' => 'https://globalinovasi.co.id',
-                'email_perusahaan' => 'contact@globalinovasi.co.id',
-                'telepon' => '031-8765432',
-                'alamat' => 'Jl. Pemuda No. 56, Surabaya',
-                'jumlah_karyawan' => 120,
-                'tahun_dibentuk' => 2008,
+                'company_email' => 'contact@globalinovasi.co.id',
+                'phone' => '031-8765432',
+                'address' => 'Jl. Pemuda No. 56, Surabaya',
+                'employee_count' => 120,
+                'founded_year' => 2008,
             ],
         ];
 
@@ -74,21 +74,21 @@ class CompanyProfileSeeder extends Seeder
 
             // Create company profile
             DB::table('company_profiles')->insert([
-                'id_pengguna' => $userId,
-                'nama_perusahaan' => $companyDetails[$detailIndex]['nama_perusahaan'],
-                'industri' => $companyDetails[$detailIndex]['industri'],
-                'deskripsi' => $companyDetails[$detailIndex]['deskripsi'],
-                'lokasi' => $companyDetails[$detailIndex]['lokasi'],
+                'user_id' => $userId,
+                'company_name' => $companyDetails[$detailIndex]['company_name'],
+                'industry' => $companyDetails[$detailIndex]['industry'],
+                'description' => $companyDetails[$detailIndex]['description'],
+                'location' => $companyDetails[$detailIndex]['location'],
                 'website' => $companyDetails[$detailIndex]['website'],
-                'email_perusahaan' => $companyDetails[$detailIndex]['email_perusahaan'],
-                'telepon' => $companyDetails[$detailIndex]['telepon'],
-                'alamat' => $companyDetails[$detailIndex]['alamat'],
-                'path_foto' => null,
-                'jumlah_karyawan' => $companyDetails[$detailIndex]['jumlah_karyawan'],
-                'tahun_dibentuk' => $companyDetails[$detailIndex]['tahun_dibentuk'],
-                'approve' => $faker->boolean(),
-                'dibuat_pada' => now(),
-                'diperbarui_pada' => now(),
+                'company_email' => $companyDetails[$detailIndex]['company_email'],
+                'phone' => $companyDetails[$detailIndex]['phone'],
+                'address' => $companyDetails[$detailIndex]['address'],
+                'photo_path' => null,
+                'employee_count' => $companyDetails[$detailIndex]['employee_count'],
+                'founded_year' => $companyDetails[$detailIndex]['founded_year'],
+                'is_approved' => $faker->boolean(),
+                'created_at' => now(),
+                'updated_at' => now(),
             ]);
         }
     }

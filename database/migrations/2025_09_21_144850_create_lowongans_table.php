@@ -12,23 +12,20 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('lowongans', function (Blueprint $table) {
-            $table->id('id_lowongan');
-            $table->unsignedBigInteger('id_company');
-            $table->string('judul');
-            $table->text('deskripsi');
-            $table->string('persyaratan')->nullable();
-            $table->decimal('gaji', 15, 2)->nullable();
-            $table->string('lokasi')->nullable();
-            $table->string('jenis_pekerjaan')->nullable();
-            $table->string('level_pekerjaan');
-            $table->enum('status', ['dibuka', 'ditutup'])->default('dibuka');
-            $table->date('tanggal_posting')->nullable();
-            $table->date('tanggal_berakhir')->nullable();
-            $table->boolean('approve')->default(false);
+            $table->id('job_id');
+            $table->foreignId('company_id')->constrained('company_profiles')->onDelete('cascade');
+            $table->string('title');
+            $table->text('description');
+            $table->string('requirements')->nullable();
+            $table->decimal('salary', 15, 2)->nullable();
+            $table->string('location')->nullable();
+            $table->string('job_type')->nullable();
+            $table->string('job_level');
+            $table->enum('status', ['open', 'closed'])->default('open'); // status mapping: dibuka->open, ditutup->closed
+            $table->date('posted_date')->nullable();
+            $table->date('expiry_date')->nullable();
+            $table->boolean('is_approved')->default(false);
             $table->timestamps();
-
-            // Relasi ke tabel company
-            $table->foreign('id_company')->references('id')->on('company_profiles')->onDelete('cascade');
         });
     }
 

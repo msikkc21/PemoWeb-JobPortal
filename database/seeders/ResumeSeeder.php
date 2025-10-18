@@ -16,7 +16,7 @@ class ResumeSeeder extends Seeder
         $faker = Faker::create('id_ID');
         
         // Get all job seeker IDs
-        $pencariKerjaIds = DB::table('jobseeker_profiles')->pluck('id_pencari')->toArray();
+        $pencariKerjaIds = DB::table('jobseeker_profiles')->pluck('jobseeker_id')->toArray();
         
         if (empty($pencariKerjaIds)) {
             $this->command->warn('ResumeSeeder skipped: no job seeker profiles found.');
@@ -27,7 +27,7 @@ class ResumeSeeder extends Seeder
         foreach ($pencariKerjaIds as $pencariId) {
             // Get job seeker's name and education from their profile
             $pencariProfile = DB::table('jobseeker_profiles')
-                ->where('id_pencari', $pencariId)
+                ->where('jobseeker_id', $pencariId)
                 ->first();
             
             if (!$pencariProfile) {
@@ -35,21 +35,21 @@ class ResumeSeeder extends Seeder
             }
             
             // Generate resume data based on job seeker profile
-            $fileCV = 'cv_' . strtolower(str_replace(' ', '_', $pencariProfile->nama)) . '.pdf';
+            $fileCV = 'cv_' . strtolower(str_replace(' ', '_', $pencariProfile->name)) . '.pdf';
             
             // Generate parsing data based on profile
-            $dataParsing = "Nama: {$pencariProfile->nama}\n";
-            $dataParsing .= "Pendidikan: {$pencariProfile->pendidikan}\n";
-            $dataParsing .= "Pengalaman: {$pencariProfile->pengalaman}\n";
+            $dataParsing = "Nama: {$pencariProfile->name}\n";
+            $dataParsing .= "Pendidikan: {$pencariProfile->education}\n";
+            $dataParsing .= "Pengalaman: {$pencariProfile->experience}\n";
             $dataParsing .= "Keahlian: " . $faker->randomElement(['PHP', 'JavaScript', 'Python', 'Laravel', 'React']) . ", " 
                           . $faker->randomElement(['MySQL', 'MongoDB', 'UI/UX Design', 'Komunikasi', 'Manajemen Proyek']);
             
             // Insert resume data
             DB::table('resume')->insert([
-                'id_pencari' => $pencariId,
-                'file_cv' => $fileCV,
-                'data_parsing' => $dataParsing,
-                'tanggal_upload' => $faker->dateTimeBetween('-60 days', '-1 days')->format('Y-m-d'),
+                'jobseeker_id' => $pencariId,
+                'cv_file' => $fileCV,
+                'parsed_data' => $dataParsing,
+                'upload_date' => $faker->dateTimeBetween('-60 days', '-1 days')->format('Y-m-d'),
             ]);
         }
     }

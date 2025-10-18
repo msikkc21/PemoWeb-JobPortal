@@ -21,9 +21,9 @@ class Role extends Model
     ];
 
 
-    public function penggunas()
+    public function users()
     {
-        return $this->hasMany(Pengguna::class, 'role_id');
+        return $this->hasMany(User::class, 'role_id');
     }
 
     public function permissions()

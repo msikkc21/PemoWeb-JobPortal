@@ -13,21 +13,21 @@ class LowonganKeahlian extends Model
     protected $table = 'lowongan_keahlians';
 
     public $incrementing = false;
-    protected $primaryKey = ['id_lowongan', 'id_keahlian'];
+    public $timestamps = false;
+    protected $primaryKey = ['job_id', 'skill_id'];
 
     protected $fillable = [
-        'id_lowongan',
-        'id_keahlian',
-        'tingkat',
+        'job_id',
+        'skill_id',
     ];
 
     public function lowongan()
     {
-        return $this->belongsTo(Lowongan::class, 'id_lowongan', 'id_lowongan');
+        return $this->belongsTo(Lowongan::class, 'job_id', 'job_id');
     }
 
-    public function keahlian()
+    public function skill()
     {
-        return $this->belongsTo(Keahlian::class, 'id_keahlian', 'id_keahlian');
+        return $this->belongsTo(Keahlian::class, 'skill_id', 'skill_id');
     }
 }

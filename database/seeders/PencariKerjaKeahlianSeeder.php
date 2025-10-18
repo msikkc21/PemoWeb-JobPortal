@@ -16,7 +16,7 @@ class PencariKerjaKeahlianSeeder extends Seeder
         $faker = Faker::create('id_ID');
         
         // Get all job seeker profiles
-        $pencariKerjaIds = DB::table('jobseeker_profiles')->pluck('id_pencari')->toArray();
+        $pencariKerjaIds = DB::table('jobseeker_profiles')->pluck('jobseeker_id')->toArray();
         
         if (empty($pencariKerjaIds)) {
             $this->command->warn('PencariKerjaKeahlianSeeder skipped: no job seeker profiles found.');
@@ -24,7 +24,7 @@ class PencariKerjaKeahlianSeeder extends Seeder
         }
         
         // Get all skill IDs
-        $keahlianIds = DB::table('keahlians')->pluck('id')->toArray();
+        $keahlianIds = DB::table('keahlians')->pluck('skill_id')->toArray();
         
         if (empty($keahlianIds)) {
             $this->command->warn('PencariKerjaKeahlianSeeder skipped: no skills found.');
@@ -35,26 +35,26 @@ class PencariKerjaKeahlianSeeder extends Seeder
         foreach ($pencariKerjaIds as $pencariId) {
             // Get job seeker's education from profile to determine skill levels
             $pencariProfile = DB::table('jobseeker_profiles')
-                ->where('id_pencari', $pencariId)
+                ->where('jobseeker_id', $pencariId)
                 ->first();
             
-            // Based on education, determine max years of experience and skill level probabilities
+            // Based on education, determine max years of experience and skill level probabilities (with English mapping)
             $maxYears = 1;
-            $levelProbabilities = ['pemula' => 70, 'menengah' => 25, 'mahir' => 5]; // Default for SMA
+            $levelProbabilities = ['beginner' => 70, 'intermediate' => 25, 'expert' => 5]; // Default for SMA
             
             if ($pencariProfile) {
-                switch ($pencariProfile->pendidikan) {
+                switch ($pencariProfile->education) {
                     case 'S2':
                         $maxYears = 10;
-                        $levelProbabilities = ['pemula' => 10, 'menengah' => 40, 'mahir' => 50];
+                        $levelProbabilities = ['beginner' => 10, 'intermediate' => 40, 'expert' => 50];
                         break;
                     case 'S1':
                         $maxYears = 7;
-                        $levelProbabilities = ['pemula' => 20, 'menengah' => 50, 'mahir' => 30];
+                        $levelProbabilities = ['beginner' => 20, 'intermediate' => 50, 'expert' => 30];
                         break;
                     case 'D3':
                         $maxYears = 5;
-                        $levelProbabilities = ['pemula' => 30, 'menengah' => 50, 'mahir' => 20];
+                        $levelProbabilities = ['beginner' => 30, 'intermediate' => 50, 'expert' => 20];
                         break;
                 }
             }
@@ -73,10 +73,10 @@ class PencariKerjaKeahlianSeeder extends Seeder
                 
                 // Experience years based on skill level
                 switch ($level) {
-                    case 'mahir':
+                    case 'expert':
                         $years = rand(max(3, $maxYears - 4), $maxYears);
                         break;
-                    case 'menengah':
+                    case 'intermediate':
                         $years = rand(2, min(5, $maxYears));
                         break;
                     default:
@@ -86,10 +86,10 @@ class PencariKerjaKeahlianSeeder extends Seeder
                 
                 // Insert the job seeker skill
                 DB::table('pencari_kerja_keahlians')->insert([
-                    'id_pencari' => $pencariId,
-                    'id_keahlian' => $keahlianId,
-                    'tingkat' => $level,
-                    'pengalaman_tahun' => $years,
+                    'jobseeker_id' => $pencariId,
+                    'skill_id' => $keahlianId,
+                    'level' => $level,
+                    'experience_years' => $years,
                     'created_at' => now(),
                     'updated_at' => now()
                 ]);

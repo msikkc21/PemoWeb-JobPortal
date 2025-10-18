@@ -9,20 +9,33 @@ class Lowongan extends Model
 {
     use HasFactory;
 
-    protected $table = 'lowongan';
+    protected $table = 'lowongans';
+    protected $primaryKey = 'job_id';
 
     protected $fillable = [
-        'id_company',
-        'judul',
-        'deskripsi',
-        'persyaratan',
-        'gaji',
-        'lokasi',
-        'jenis_pekerjaan',
-        'level_pekerjaan',
+        'company_id',
+        'title',
+        'description',
+        'requirements',
+        'salary',
+        'location',
+        'job_type',
+        'job_level',
         'status',
-        'tanggal_posting',
-        'tanggal_berakhir',
-        'approve',
+        'posted_date',
+        'expiry_date',
+        'is_approved',
     ];
+
+    protected $casts = [
+        'salary' => 'decimal:2',
+        'posted_date' => 'date',
+        'expiry_date' => 'date',
+        'is_approved' => 'boolean',
+    ];
+
+    public function company()
+    {
+        return $this->belongsTo(CompanyProfile::class, 'company_id');
+    }
 }

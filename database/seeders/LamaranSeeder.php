@@ -17,8 +17,8 @@ class LamaranSeeder extends Seeder
         
         // Get job seekers with resumes
         $jobSeekerResumes = DB::table('resume')
-            ->join('jobseeker_profiles', 'resume.id_pencari', '=', 'jobseeker_profiles.id_pencari')
-            ->select('resume.id_resume', 'resume.id_pencari', 'jobseeker_profiles.nama')
+            ->join('jobseeker_profiles', 'resume.jobseeker_id', '=', 'jobseeker_profiles.jobseeker_id')
+            ->select('resume.resume_id', 'resume.jobseeker_id', 'jobseeker_profiles.name')
             ->get();
             
         if ($jobSeekerResumes->isEmpty()) {
@@ -28,7 +28,7 @@ class LamaranSeeder extends Seeder
         
         // Get all job vacancies
         $lowongans = DB::table('lowongans')
-            ->select('id_lowongan', 'judul', 'id_company')
+            ->select('job_id', 'title', 'company_id')
             ->get();
             
         if ($lowongans->isEmpty()) {
@@ -49,7 +49,7 @@ class LamaranSeeder extends Seeder
             
             foreach ($shuffledVacancies as $vacancy) {
                 // Skip if already applied
-                $key = $jobSeeker->id_pencari . '-' . $vacancy->id_lowongan;
+                $key = $jobSeeker->jobseeker_id . '-' . $vacancy->job_id;
                 if (isset($applications[$key])) {
                     continue;
                 }
@@ -59,21 +59,21 @@ class LamaranSeeder extends Seeder
                 // Generate application date (within the last 30 days)
                 $applicationDate = $faker->dateTimeBetween('-30 days', 'now')->format('Y-m-d');
                 
-                // Generate status with weighted probabilities
-                $statuses = ['dikirim' => 30, 'diproses' => 40, 'diterima' => 20, 'ditolak' => 10];
+                // Generate status with weighted probabilities (status mapping applied)
+                $statuses = ['submitted' => 30, 'in_process' => 40, 'accepted' => 20, 'rejected' => 10];
                 $status = $this->getRandomWeightedElement($statuses);
                 
                 // Generate a note/cover letter
-                $catatan = $this->generateCoverLetter($jobSeeker->nama, $vacancy->judul);
+                $catatan = $this->generateCoverLetter($jobSeeker->name, $vacancy->title);
                 
                 // Create the job application
                 DB::table('lamarans')->insert([
-                    'id_lowongan' => $vacancy->id_lowongan,
-                    'id_pencari' => $jobSeeker->id_pencari,
-                    'id_resume' => $jobSeeker->id_resume,
+                    'job_id' => $vacancy->job_id,
+                    'jobseeker_id' => $jobSeeker->jobseeker_id,
+                    'resume_id' => $jobSeeker->resume_id,
                     'status' => $status,
-                    'tanggal_lamaran' => $applicationDate,
-                    'catatan' => $catatan,
+                    'application_date' => $applicationDate,
+                    'notes' => $catatan,
                     'created_at' => $applicationDate . ' ' . $faker->time(),
                     'updated_at' => $applicationDate . ' ' . $faker->time(),
                 ]);

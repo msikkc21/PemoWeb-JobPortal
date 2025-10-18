@@ -19,7 +19,7 @@ class PenggunaSeeder extends Seeder
         $adminRoleId = DB::table('roles')->where('name','Admin')->value('id');
 
         // Create one admin user
-        DB::table('pengguna')->insert([
+        DB::table('users')->insert([
             'name' => 'Admin JobPortal',
             'email' => 'admin@jobportal.com',
             'password' => Hash::make('password123'),
@@ -33,7 +33,7 @@ class PenggunaSeeder extends Seeder
 
         // Create 5 job seekers
         for ($i = 1; $i <= 5; $i++) {
-            DB::table('pengguna')->insert([
+            DB::table('users')->insert([
                 'name' => $faker->name,
                 'email' => 'pencarikerja' . $i . '@example.com',
                 'password' => Hash::make('password123'),
@@ -50,7 +50,7 @@ class PenggunaSeeder extends Seeder
         $companyNames = ['PT Teknologi Maju', 'CV Desain Kreatif', 'PT Global Inovasi'];
         
         for ($i = 0; $i < count($companyNames); $i++) {
-            DB::table('pengguna')->insert([
+            DB::table('users')->insert([
                 'name' => $companyNames[$i],
                 'email' => 'perusahaan' . ($i + 1) . '@example.com',
                 'password' => Hash::make('password123'),

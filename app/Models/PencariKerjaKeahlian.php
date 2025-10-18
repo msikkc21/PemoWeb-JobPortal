@@ -11,22 +11,22 @@ class PencariKerjaKeahlian extends Model
 
     protected $table = 'pencari_kerja_keahlians';
     public $incrementing = false;
-    protected $primaryKey = ['id_pencari', 'id_keahlian'];
+    protected $primaryKey = ['jobseeker_id', 'skill_id'];
 
     protected $fillable = [
-        'id_pencari',
-        'id_keahlian',
-        'tingkat',
-        'pengalaman_tahun',
+        'jobseeker_id',
+        'skill_id',
+        'level',
+        'experience_years',
     ];
 
-    public function pencari()
+    public function jobseeker()
     {
-        return $this->belongsTo(JobSeekerProfile::class, 'id_pencari', 'id_pencari');
+        return $this->belongsTo(JobSeekerProfile::class, 'jobseeker_id', 'jobseeker_id');
     }
 
-    public function keahlian()
+    public function skill()
     {
-        return $this->belongsTo(Keahlian::class, 'id_keahlian', 'id_keahlian');
+        return $this->belongsTo(Keahlian::class, 'skill_id', 'skill_id');
     }
 }

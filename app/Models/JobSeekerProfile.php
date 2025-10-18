@@ -6,34 +6,35 @@ use Illuminate\Database\Eloquent\Model;
 
 class JobSeekerProfile extends Model
 {
-    // Match migration table name
     protected $table = 'jobseeker_profiles';
-    protected $primaryKey = 'id_pencari';
-
-    const CREATED_AT = 'dibuat_pada';
-    const UPDATED_AT = 'diperbarui_pada';
+    protected $primaryKey = 'jobseeker_id';
 
     protected $fillable = [
-        'id_pengguna',
-        'nama',
-        'jenis_kelamin',
-        'tempat_lahir',
-        'tanggal_lahir',
-        'telepon',
-        'alamat',
-        'pendidikan',
-        'pengalaman',
-        'deskripsi',
-        'path_foto',
+        'user_id',
+        'name',
+        'gender',
+        'birth_place',
+        'birth_date',
+        'phone',
+        'address',
+        'education',
+        'experience',
+        'description',
+        'photo_path',
         'linkedin',
         'github',
         'portfolio',
     ];
 
     protected $casts = [
-        'id_pengguna' => 'integer',
-        'tanggal_lahir' => 'date',
-        'dibuat_pada' => 'datetime',
-        'diperbarui_pada' => 'datetime',
+        'user_id' => 'integer',
+        'birth_date' => 'date',
+        'created_at' => 'datetime',
+        'updated_at' => 'datetime',
     ];
+
+    public function user()
+    {
+        return $this->belongsTo(User::class, 'user_id');
+    }
 }

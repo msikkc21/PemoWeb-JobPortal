@@ -9,15 +9,24 @@ class Wawancara extends Model
 {
     use HasFactory;
 
-    protected $table = 'wawancara'; // nama tabel
-    protected $primaryKey = 'id_wawancara'; // primary key
+    protected $table = 'wawancara';
+    protected $primaryKey = 'interview_id';
 
-    public $timestamps = false; // karena tabel tidak ada created_at & updated_at
+    public $timestamps = false;
 
     protected $fillable = [
-        'id_lamaran',
-        'jadwal',
-        'lokasi',
+        'application_id',
+        'schedule',
+        'location',
         'status',
     ];
+
+    protected $casts = [
+        'schedule' => 'datetime',
+    ];
+
+    public function application()
+    {
+        return $this->belongsTo(Lamaran::class, 'application_id', 'application_id');
+    }
 }

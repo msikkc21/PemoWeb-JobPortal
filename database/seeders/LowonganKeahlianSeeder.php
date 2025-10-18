@@ -13,7 +13,7 @@ class LowonganKeahlianSeeder extends Seeder
     public function run(): void
     {
         // Get job vacancies
-        $lowongans = DB::table('lowongans')->pluck('id_lowongan')->toArray();
+        $lowongans = DB::table('lowongans')->pluck('job_id')->toArray();
         
         if (empty($lowongans)) {
             $this->command->warn('LowonganKeahlianSeeder skipped: no job vacancies found.');
@@ -21,7 +21,7 @@ class LowonganKeahlianSeeder extends Seeder
         }
         
         // Get skills
-        $keahlians = DB::table('keahlians')->pluck('id')->toArray();
+        $keahlians = DB::table('keahlians')->pluck('skill_id')->toArray();
         
         if (empty($keahlians)) {
             $this->command->warn('LowonganKeahlianSeeder skipped: no skills found.');
@@ -32,35 +32,35 @@ class LowonganKeahlianSeeder extends Seeder
         $lowonganKeahlians = [
             // Backend Developer PHP/Laravel needs PHP, Laravel, MySQL skills
             1 => [
-                ['id_keahlian' => 1, 'category' => 'Bahasa Pemrograman'], // PHP
-                ['id_keahlian' => 4, 'category' => 'Framework'], // Laravel
-                ['id_keahlian' => 7, 'category' => 'Database'], // MySQL
+                ['skill_id' => 1, 'category' => 'Bahasa Pemrograman'], // PHP
+                ['skill_id' => 4, 'category' => 'Framework'], // Laravel
+                ['skill_id' => 7, 'category' => 'Database'], // MySQL
             ],
             
             // Frontend Developer React needs JavaScript, React
             2 => [
-                ['id_keahlian' => 2, 'category' => 'Bahasa Pemrograman'], // JavaScript
-                ['id_keahlian' => 5, 'category' => 'Framework'], // React
+                ['skill_id' => 2, 'category' => 'Bahasa Pemrograman'], // JavaScript
+                ['skill_id' => 5, 'category' => 'Framework'], // React
             ],
             
             // UI/UX Designer needs UI/UX, Photoshop
             3 => [
-                ['id_keahlian' => 9, 'category' => 'Desain'], // UI/UX
-                ['id_keahlian' => 10, 'category' => 'Desain'], // Adobe Photoshop
+                ['skill_id' => 9, 'category' => 'Desain'], // UI/UX
+                ['skill_id' => 10, 'category' => 'Desain'], // Adobe Photoshop
             ],
             
             // Data Analyst needs Python, MySQL
             4 => [
-                ['id_keahlian' => 3, 'category' => 'Bahasa Pemrograman'], // Python
-                ['id_keahlian' => 7, 'category' => 'Database'], // MySQL
-                ['id_keahlian' => 11, 'category' => 'Soft Skill'], // Komunikasi
+                ['skill_id' => 3, 'category' => 'Bahasa Pemrograman'], // Python
+                ['skill_id' => 7, 'category' => 'Database'], // MySQL
+                ['skill_id' => 11, 'category' => 'Soft Skill'], // Komunikasi
             ],
             
             // DevOps Engineer needs various skills
             5 => [
-                ['id_keahlian' => 1, 'category' => 'Bahasa Pemrograman'], // PHP
-                ['id_keahlian' => 3, 'category' => 'Bahasa Pemrograman'], // Python
-                ['id_keahlian' => 12, 'category' => 'Soft Skill'], // Manajemen Proyek
+                ['skill_id' => 1, 'category' => 'Bahasa Pemrograman'], // PHP
+                ['skill_id' => 3, 'category' => 'Bahasa Pemrograman'], // Python
+                ['skill_id' => 12, 'category' => 'Soft Skill'], // Manajemen Proyek
             ]
         ];
         
@@ -70,14 +70,14 @@ class LowonganKeahlianSeeder extends Seeder
             if (isset($lowonganKeahlians[$lowonganId])) {
                 foreach ($lowonganKeahlians[$lowonganId] as $keahlian) {
                     // Skip if the skill ID doesn't exist in our database
-                    if (!in_array($keahlian['id_keahlian'], $keahlians)) {
+                    if (!in_array($keahlian['skill_id'], $keahlians)) {
                         continue;
                     }
                     
                     // Insert the relationship
                     DB::table('lowongan_keahlians')->insert([
-                        'id_lowongan' => $lowonganId,
-                        'id_keahlian' => $keahlian['id_keahlian']
+                        'job_id' => $lowonganId,
+                        'skill_id' => $keahlian['skill_id']
                     ]);
                 }
             } else {
@@ -91,8 +91,8 @@ class LowonganKeahlianSeeder extends Seeder
                 
                 foreach ($selectedSkills as $keahlianId) {
                     DB::table('lowongan_keahlians')->insert([
-                        'id_lowongan' => $lowonganId,
-                        'id_keahlian' => $keahlianId
+                        'job_id' => $lowonganId,
+                        'skill_id' => $keahlianId
                     ]);
                 }
             }

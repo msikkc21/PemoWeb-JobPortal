@@ -12,31 +12,27 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('jobseeker_profiles', function (Blueprint $table) {
-            $table->bigIncrements('id_pencari');
+            $table->id('jobseeker_id');
 
-            $table->foreignId('id_pengguna')
-                ->references('id_pengguna')->on('pengguna')
-                ->cascadeOnUpdate()
-                ->cascadeOnDelete();
+            $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
 
-            $table->string('nama');
-            $table->string('jenis_kelamin', 20)->nullable();
-            $table->string('tempat_lahir')->nullable();
-            $table->date('tanggal_lahir')->nullable();
-            $table->string('telepon')->nullable();
-            $table->text('alamat')->nullable();
+            $table->string('name');
+            $table->string('gender', 20)->nullable();
+            $table->string('birth_place')->nullable();
+            $table->date('birth_date')->nullable();
+            $table->string('phone')->nullable();
+            $table->text('address')->nullable();
 
-            $table->string('pendidikan')->nullable();
-            $table->text('pengalaman')->nullable();
-            $table->text('deskripsi')->nullable();
+            $table->string('education')->nullable();
+            $table->text('experience')->nullable();
+            $table->text('description')->nullable();
 
-            $table->string('path_foto')->nullable();
+            $table->string('photo_path')->nullable();
             $table->string('linkedin')->nullable();
             $table->string('github')->nullable();
             $table->string('portfolio')->nullable();
 
-            $table->timestamp('dibuat_pada')->useCurrent();
-            $table->timestamp('diperbarui_pada')->useCurrent()->useCurrentOnUpdate();
+            $table->timestamps();
         });
     }
 

@@ -15,16 +15,16 @@ class WawancaraSeeder extends Seeder
     {
         $faker = Faker::create('id_ID');
         
-        // Get job applications with status 'diproses' or 'diterima'
+        // Get job applications with status 'in_process' or 'accepted'
         $validApplications = DB::table('lamarans')
-            ->whereIn('lamarans.status', ['diproses', 'diterima'])
-            ->join('lowongans', 'lamarans.id_lowongan', '=', 'lowongans.id_lowongan')
-            ->join('company_profiles', 'lowongans.id_company', '=', 'company_profiles.id')
-            ->select('lamarans.id_lamaran', 'lamarans.status', 'lowongans.judul', 'company_profiles.lokasi', 'company_profiles.nama_perusahaan')
+            ->whereIn('lamarans.status', ['in_process', 'accepted'])
+            ->join('lowongans', 'lamarans.job_id', '=', 'lowongans.job_id')
+            ->join('company_profiles', 'lowongans.company_id', '=', 'company_profiles.id')
+            ->select('lamarans.application_id', 'lamarans.status', 'lowongans.title', 'company_profiles.location', 'company_profiles.company_name')
             ->get();
             
         if ($validApplications->isEmpty()) {
-            $this->command->warn('WawancaraSeeder skipped: no applications with status diproses or diterima found.');
+            $this->command->warn('WawancaraSeeder skipped: no applications with status in_process or accepted found.');
             return;
         }
         
@@ -35,8 +35,8 @@ class WawancaraSeeder extends Seeder
         ];
         
         $interviewStatuses = [
-            'diproses' => ['Menunggu Konfirmasi', 'Dijadwalkan', 'Tertunda'],
-            'diterima' => ['Selesai', 'Lulus Wawancara', 'Menunggu Tahap Selanjutnya']
+            'in_process' => ['Menunggu Konfirmasi', 'Dijadwalkan', 'Tertunda'],
+            'accepted' => ['Selesai', 'Lulus Wawancara', 'Menunggu Tahap Selanjutnya']
         ];
         
         // Schedule interviews for selected applications
@@ -46,7 +46,7 @@ class WawancaraSeeder extends Seeder
             $locationType = $isInOffice ? 'office' : 'online';
             
             // Generate interview date
-            if ($application->status === 'diproses') {
+            if ($application->status === 'in_process') {
                 // For applications in process, schedule in the future
                 $interviewDate = $faker->dateTimeBetween('+3 days', '+30 days');
             } else {
@@ -63,7 +63,7 @@ class WawancaraSeeder extends Seeder
             $location = $locationTemplate;
             
             if ($locationType === 'office') {
-                $location = str_replace('{0}', $application->nama_perusahaan, $locationTemplate);
+                $location = str_replace('{0}', $application->company_name, $locationTemplate);
                 $location = str_replace('{1}', $faker->numberBetween(1, 10), $location);
             }
             
@@ -72,9 +72,9 @@ class WawancaraSeeder extends Seeder
             
             // Create the interview
             DB::table('wawancara')->insert([
-                'id_lamaran' => $application->id_lamaran,
-                'jadwal' => $interviewDateTime,
-                'lokasi' => $location,
+                'application_id' => $application->application_id,
+                'schedule' => $interviewDateTime,
+                'location' => $location,
                 'status' => $status,
             ]);
         }

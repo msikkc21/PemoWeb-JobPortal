@@ -12,13 +12,11 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('wawancara', function (Blueprint $table) {
-            $table->increments('id_wawancara'); // primary key auto increment
-            $table->unsignedBigInteger('id_lamaran'); // foreign key ke tabel lamaran (nanti bisa ditambah relasi)
-            $table->dateTime('jadwal');
-            $table->string('lokasi');
+            $table->id('interview_id');
+            $table->foreignId('application_id')->constrained('lamarans', 'application_id')->onDelete('cascade');
+            $table->dateTime('schedule');
+            $table->string('location');
             $table->string('status');
-
-            $table->foreign('id_lamaran')->references('id_lamaran')->on('lamarans')->onDelete('cascade');
         });
     }
 

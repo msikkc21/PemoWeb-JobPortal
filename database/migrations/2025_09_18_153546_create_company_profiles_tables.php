@@ -14,29 +14,21 @@ return new class extends Migration
         Schema::create('company_profiles', function (Blueprint $table) {
             $table->id();
 
-            $table->unsignedBigInteger('id_pengguna');
-            $table->string('nama_perusahaan');
-            $table->string('industri')->nullable();
-            $table->text('deskripsi')->nullable();
-            $table->string('lokasi')->nullable();
+            $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
+            $table->string('company_name');
+            $table->string('industry')->nullable();
+            $table->text('description')->nullable();
+            $table->string('location')->nullable();
             $table->string('website')->nullable();
-            $table->string('email_perusahaan')->nullable();
-            $table->string('telepon')->nullable();
-            $table->text('alamat')->nullable();
-            $table->string('path_foto')->nullable();
-            $table->unsignedInteger('jumlah_karyawan')->nullable();
-            $table->unsignedSmallInteger('tahun_dibentuk')->nullable();
-            $table->boolean('approve')->default(false);
+            $table->string('company_email')->nullable();
+            $table->string('phone')->nullable();
+            $table->text('address')->nullable();
+            $table->string('photo_path')->nullable();
+            $table->unsignedInteger('employee_count')->nullable();
+            $table->unsignedSmallInteger('founded_year')->nullable();
+            $table->boolean('is_approved')->default(false);
 
-            // Custom timestamps to match the model constants
-            $table->timestamp('dibuat_pada')->useCurrent();
-            $table->timestamp('diperbarui_pada')->useCurrent()->useCurrentOnUpdate();
-
-            // Foreign key to users table
-            $table->foreign('id_pengguna')
-                ->references('id_pengguna')->on('pengguna')
-                ->cascadeOnUpdate()
-                ->cascadeOnDelete();
+            $table->timestamps();
         });
     }
 

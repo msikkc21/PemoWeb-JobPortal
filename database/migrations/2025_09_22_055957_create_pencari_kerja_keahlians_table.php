@@ -12,15 +12,13 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('pencari_kerja_keahlians', function (Blueprint $table) {
-            $table->unsignedBigInteger('id_pencari');
-            $table->unsignedBigInteger('id_keahlian');
-            $table->enum('tingkat', ['pemula', 'menengah', 'mahir']);
-            $table->integer('pengalaman_tahun');
+            $table->foreignId('jobseeker_id')->constrained('jobseeker_profiles', 'jobseeker_id')->onDelete('cascade');
+            $table->foreignId('skill_id')->constrained('keahlians', 'skill_id')->onDelete('cascade');
+            $table->enum('level', ['beginner', 'intermediate', 'expert']); // level mapping: pemula->beginner, menengah->intermediate, mahir->expert
+            $table->integer('experience_years');
             $table->timestamps();
 
-            $table->primary(['id_pencari', 'id_keahlian']);
-            $table->foreign('id_pencari')->references('id_pencari')->on('jobseeker_profiles')->onDelete('cascade');
-            $table->foreign('id_keahlian')->references('id')->on('keahlians')->onDelete('cascade');
+            $table->primary(['jobseeker_id', 'skill_id']);
         });
     }
 

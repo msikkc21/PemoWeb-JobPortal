@@ -8,19 +8,12 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::create('pengguna', function (Blueprint $table) {
-            $table->id('id_pengguna'); 
-            $table->string('name', 100); 
-            $table->string('email', 100)->unique(); 
-            $table->string('password'); 
-            // $table->enum('peran', ['Admin', 'Pencari Kerja', 'Perusahaan']);
-            $table->foreignId('role_id')->constrained('roles')->onDelete('cascade');
-            $table->timestamps();
-        });
+        // This migration is now obsolete - using standard users table instead
+        // See: database/migrations/0001_01_01_000000_create_users_table.php
     }
 
     public function down(): void
     {
-        Schema::dropIfExists('pengguna');
+        // No action needed
     }
 };

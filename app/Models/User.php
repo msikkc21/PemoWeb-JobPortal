@@ -6,6 +6,8 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class User extends Authenticatable
 {
@@ -21,6 +23,7 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'role_id',
     ];
 
     /**
@@ -44,5 +47,70 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
         ];
+    }
+
+    public function jobseekerProfile(): HasOne
+    {
+        return $this->hasOne(JobSeekerProfile::class, 'user_id');
+    }
+
+    public function companyProfile(): HasOne
+    {
+        return $this->hasOne(CompanyProfile::class, 'user_id');
+    }
+
+    public function role(): BelongsTo
+    {
+        return $this->belongsTo(Role::class, 'role_id');
+    }
+
+    // Check if user has specific permission
+    public function hasPermission(string $permission): bool
+    {
+        return $this->role?->hasPermission($permission) ?? false;
+    }
+
+    // Check if user has any of the given permissions
+    public function hasAnyPermission(array $permissions): bool
+    {
+        foreach ($permissions as $permission) {
+            if ($this->hasPermission($permission)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    // Check if user has all given permissions
+    public function hasAllPermissions(array $permissions): bool
+    {
+        foreach ($permissions as $permission) {
+            if (!$this->hasPermission($permission)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    // Get user's role name
+    public function getRoleName(): string
+    {
+        return $this->role?->name ?? 'No Role';
+    }
+
+    // Helper methods for role checking
+    public function isAdmin(): bool
+    {
+        return $this->getRoleName() === 'Admin';
+    }
+
+    public function isJobSeeker(): bool
+    {
+        return $this->getRoleName() === 'Pencari_Kerja';
+    }
+
+    public function isCompany(): bool
+    {
+        return $this->getRoleName() === 'Perusahaan';
     }
 }

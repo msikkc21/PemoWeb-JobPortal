@@ -12,11 +12,11 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('resume', function (Blueprint $table) {
-            $table->id('id_resume'); // primary key auto increment
-            $table->unsignedBigInteger('id_pencari'); // foreign key ke tabel pencari kerja (nanti bisa ditambah relasi)
-            $table->string('file_cv');
-            $table->text('data_parsing');
-            $table->date('tanggal_upload');
+            $table->id('resume_id');
+            $table->foreignId('jobseeker_id')->constrained('jobseeker_profiles', 'jobseeker_id')->onDelete('cascade');
+            $table->string('cv_file');
+            $table->text('parsed_data');
+            $table->date('upload_date');
         });
     }
 

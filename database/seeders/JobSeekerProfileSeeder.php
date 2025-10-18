@@ -18,12 +18,8 @@ class JobSeekerProfileSeeder extends Seeder
         $faker = Faker::create('id_ID');
 
         // Get all users with 'Pencari Kerja' role
-        // $jobSeekerUserIds = DB::table('pengguna')
-        //     ->where('peran', 'Pencari Kerja')
-        //     ->pluck('id_pengguna')
-        //     ->toArray();
-        $jobSeekerRoleId = DB::table('roles')->where('name','Pencari Kerja')->value('id');
-        $jobSeekerUserIds = DB::table('pengguna')->where('role_id', $jobSeekerRoleId)->pluck('id_pengguna')->toArray();
+        $jobSeekerRoleId = DB::table('roles')->where('name','Pencari_Kerja')->value('id');
+        $jobSeekerUserIds = DB::table('users')->where('role_id', $jobSeekerRoleId)->pluck('id')->toArray();
 
         if (empty($jobSeekerUserIds)) {
             $this->command->warn('JobSeekerProfileSeeder skipped: no users with Pencari Kerja role found.');
@@ -54,22 +50,22 @@ class JobSeekerProfileSeeder extends Seeder
             }
             
             DB::table('jobseeker_profiles')->insert([
-                'id_pengguna' => $userId,
-                'nama' => $faker->name(),
-                'jenis_kelamin' => $faker->randomElement(['Laki-laki', 'Perempuan']),
-                'tempat_lahir' => $faker->city(),
-                'tanggal_lahir' => $faker->dateTimeBetween('-40 years', '-18 years')->format('Y-m-d'),
-                'telepon' => $faker->phoneNumber(),
-                'alamat' => $faker->address(),
-                'pendidikan' => $education,
-                'pengalaman' => $experience,
-                'deskripsi' => $faker->paragraph(3),
-                'path_foto' => null,
+                'user_id' => $userId,
+                'name' => $faker->name(),
+                'gender' => $faker->randomElement(['Laki-laki', 'Perempuan']),
+                'birth_place' => $faker->city(),
+                'birth_date' => $faker->dateTimeBetween('-40 years', '-18 years')->format('Y-m-d'),
+                'phone' => $faker->phoneNumber(),
+                'address' => $faker->address(),
+                'education' => $education,
+                'experience' => $experience,
+                'description' => $faker->paragraph(3),
+                'photo_path' => null,
                 'linkedin' => 'https://www.linkedin.com/in/' . $faker->userName(),
                 'github' => $faker->optional(0.7)->url(),
                 'portfolio' => $faker->optional(0.6)->url(),
-                'dibuat_pada' => now(),
-                'diperbarui_pada' => now()
+                'created_at' => now(),
+                'updated_at' => now()
             ]);
         }
     }

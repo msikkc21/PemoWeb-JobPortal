@@ -12,18 +12,14 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('lamarans', function (Blueprint $table) {
-            $table->id('id_lamaran');
-            $table->unsignedBigInteger('id_lowongan');
-            $table->unsignedBigInteger('id_pencari');
-            $table->unsignedBigInteger('id_resume');
-            $table->enum('status', ['dikirim', 'diproses', 'diterima', 'ditolak']);
-            $table->date('tanggal_lamaran');
-            $table->text('catatan')->nullable();
+            $table->id('application_id');
+            $table->foreignId('job_id')->constrained('lowongans', 'job_id')->onDelete('cascade');
+            $table->foreignId('jobseeker_id')->constrained('jobseeker_profiles', 'jobseeker_id')->onDelete('cascade');
+            $table->foreignId('resume_id')->constrained('resume', 'resume_id')->onDelete('cascade');
+            $table->enum('status', ['submitted', 'in_process', 'accepted', 'rejected']); // status mapping: dikirim->submitted, diproses->in_process, diterima->accepted, ditolak->rejected
+            $table->date('application_date');
+            $table->text('notes')->nullable();
             $table->timestamps();
-
-            $table->foreign('id_lowongan')->references('id_lowongan')->on('lowongans')->onDelete('cascade');
-            $table->foreign('id_pencari')->references('id_pencari')->on('jobseeker_profiles')->onDelete('cascade');
-            $table->foreign('id_resume')->references('id_resume')->on('resume')->onDelete('cascade');
         });
     }
 
