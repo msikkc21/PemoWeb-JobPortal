@@ -34,33 +34,34 @@ class AuthenticatedSessionController extends Controller
         $request->session()->regenerate();
 
         $user = Auth::user();
-        $roleName = $user->role?->name;
 
-        // Check if user is a company
-        if (in_array($roleName, ['Perusahaan', 'Company'])) {
+        // Handle company users with specific redirect logic
+        if ($user->isCompany()) {
             $profile = \App\Models\CompanyProfile::where('user_id', $user->id)->first();
-            
-            // Check if profile is complete
-            $isComplete = $profile && 
-                         !empty($profile->company_name) && 
-                         !empty($profile->industry) && 
-                         !empty($profile->location);
 
-            if (!$isComplete) {
-                return redirect()->route('company_profiles.create')
-                    ->with('info', 'Silakan lengkapi profil perusahaan Anda.');
+            // No profile yet → redirect to create
+            if (!$profile) {
+                return redirect('/company/create');
             }
 
-            return redirect()->route('company.dashboard');
+            // Profile exists, check payment status via user_id (NOT company_profile_id)
+            $payment = \App\Models\CompanyPayment::where('user_id', $user->id)
+                ->orderBy('created_at', 'desc')
+                ->first();
+
+            // If no payment or not paid → redirect to payment
+            if (!$payment || $payment->status !== 'paid') {
+                return redirect('/company/payment');
+            }
+
+            // Profile exists AND payment is paid → redirect to company dashboard
+            return redirect('/company/dashboard');
         }
 
-        // Double-check using isCompany() method for any edge cases
-        if ($user && method_exists($user, 'isCompany') && $user->isCompany()) {
-            return redirect()->route('company.dashboard');
-        }
-
+        // Default redirect for non-company users
         return redirect()->intended(route('dashboard'));
     }
+
 
     /**
      * Destroy an authenticated session.

@@ -41,6 +41,7 @@ class RolePermissionSeeder extends Seeder
                 'create_company_profile',
                 'edit_company_profile',
                 'delete_company_profile',
+                'view_company_payment',
                 'view_jobs',
                 'create_job',
                 'edit_job',

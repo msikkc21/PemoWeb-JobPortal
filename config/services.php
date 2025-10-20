@@ -34,5 +34,11 @@ return [
             'channel' => env('SLACK_BOT_USER_DEFAULT_CHANNEL'),
         ],
     ],
+    'payment' => [
+        'base_url' => env('PAYMENT_BASE_URL'),
+        'key' => env('PAYMENT_API_KEY'),
+        'webhook_secret' => env('PAYMENT_WEBHOOK_SECRET'),
+        'amount' => 150000, // atau sesuai kebijakan harga
+    ],
 
 ];

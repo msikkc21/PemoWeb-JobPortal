@@ -54,6 +54,11 @@ class RegisteredUserController extends Controller
 
         Auth::login($user);
 
+        // Redirect company users to create profile first
+        if ($user->isCompany()) {
+            return redirect('/company/create');
+        }
+
         return redirect(route('dashboard', absolute: false));
     }
 }

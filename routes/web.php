@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\CompanyPaymentController;
 use App\Http\Controllers\ProfileController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Auth;
@@ -7,9 +8,14 @@ use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 use App\Http\Controllers\CompanyProfileController;
 use App\Http\Controllers\JobSeekerProfileController;
+use App\Http\Controllers\WebhookPaymentController;
 
 Route::get('/', function () {
     return Inertia::render('Auth/Login');
+})->middleware('guest');
+
+Route::get('/test', function () {
+    return "ok";
 })->middleware('guest');
 
 Route::get('/dashboard', function () {
@@ -26,42 +32,62 @@ Route::middleware('auth')->group(function () {
 // Company Routes - Dengan Proteksi Permission Penuh
 // ==========================================
 Route::middleware(['auth'])->prefix('company')->group(function () {
-    
+
     // Profile Management Routes
     Route::name('company_profiles.')->group(function () {
         // View company profile (permission: view_company_profiles)
         Route::get('/', [CompanyProfileController::class, 'index'])
             ->middleware('permission:view_company_profiles')
             ->name('index');
-        
+
         // Create company profile (permission: create_company_profile)
         Route::get('/create', [CompanyProfileController::class, 'create'])
             ->middleware('permission:create_company_profile')
             ->name('create');
-        
+
         // Store company profile (permission: create_company_profile)
         Route::post('/', [CompanyProfileController::class, 'store'])
             ->middleware('permission:create_company_profile')
             ->name('store');
-        
+
         // Edit company profile (permission: edit_company_profile)
         Route::get('/edit', [CompanyProfileController::class, 'edit'])
             ->middleware('permission:edit_company_profile')
             ->name('edit');
-        
+
         // Update company profile (permission: edit_company_profile)
         Route::put('/update', [CompanyProfileController::class, 'update'])
             ->middleware('permission:edit_company_profile')
             ->name('update');
     });
-    
+
+    // Payment routes (auth + permission, TANPA prefix dobel)
+    Route::middleware(['permission:view_company_payment', 'company.profile.completed'])
+        ->group(function () {
+            // Halaman ringkasan pembayaran
+            Route::get('/payment', [CompanyPaymentController::class, 'index'])->name('company.payment');
+
+            // Buat/ulang pembayaran (tidak auto-redirect ke payment_url)
+            Route::post('/payment/start', [CompanyPaymentController::class, 'startPayment'])->name('company.payment.start');
+
+            // Lanjutkan ke payment_url untuk tagihan pending & belum expired
+            Route::post('/payment/continue', [CompanyPaymentController::class, 'continueExisting'])->name('company.payment.continue');
+        });
+
+
     // Dashboard Route (memerlukan profile completed)
-    Route::middleware(['company.profile.completed', 'permission:view_company_profiles'])
+    Route::middleware(['company.profile.completed', 'company.payment.completed', 'permission:view_company_profiles'])
         ->name('company.')
         ->group(function () {
             Route::get('/dashboard', [CompanyProfileController::class, 'dashboard'])->name('dashboard');
         });
 });
+
+Route::post('/payment/webhook/callback', [WebhookPaymentController::class, 'handle'])
+    ->name('payment.webhook.callback');
+
+
+require __DIR__ . '/auth.php';
 
 // // Admin routes
 // Route::middleware(['auth', 'verified'])->prefix('admin')->name('admin.')->group(function () {
@@ -166,5 +192,3 @@ Route::middleware(['auth'])->prefix('company')->group(function () {
 // });
 
 // //----------------------
-
-require __DIR__.'/auth.php';

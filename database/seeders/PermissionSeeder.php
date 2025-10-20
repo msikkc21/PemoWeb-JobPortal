@@ -46,6 +46,7 @@ class PermissionSeeder extends Seeder
             ["name" => "create_company_profile", "display_name" => "Create Company Profile", "group" => "Company", "description" => "Create company profile", "is_active" => true],
             ["name" => "edit_company_profile", "display_name" => "Edit Company Profile", "group" => "Company", "description" => "Edit company profile", "is_active" => true],
             ["name" => "delete_company_profile", "display_name" => "Delete Company Profile", "group" => "Company", "description" => "Delete company profile", "is_active" => true],
+            ["name" => "view_company_payment", "display_name" => "View Company Payment", "group" => "Company", "description" => "View company payment status and history", "is_active" => true],
 
             // Jobs (Lowongan)
             ["name" => "view_jobs", "display_name" => "View Jobs", "group" => "Jobs", "description" => "View job listings", "is_active" => true],

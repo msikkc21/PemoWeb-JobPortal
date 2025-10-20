@@ -113,4 +113,9 @@ class User extends Authenticatable
     {
         return in_array($this->role?->name, ['Admin', 'Administrator']);
     }
+
+    // public function companyPayment()
+    // {
+    //     return $this->hasOne(CompanyPayment::class, 'user_id');
+    // }
 }
