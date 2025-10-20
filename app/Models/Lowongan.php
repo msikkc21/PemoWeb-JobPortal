@@ -36,13 +36,13 @@ class Lowongan extends Model
 
     public function company()
     {
-        return $this->belongsTo(\App\Models\CompanyProfile::class, 'id_company', 'id');
+        return $this->belongsTo(CompanyProfile::class, 'id_company', 'id');
     }
 
     public function skills()
     {
         return $this->belongsToMany(
-            \App\Models\Keahlian::class,
+            Keahlian::class,
             'lowongan_keahlians',
             'id_lowongan',
             'id_keahlian'
@@ -51,6 +51,6 @@ class Lowongan extends Model
 
     public function applications()
     {
-        return $this->hasMany(\App\Models\Lamaran::class, 'id_lowongan', 'id_lowongan');
+        return $this->hasMany(Lamaran::class, 'id_lowongan', 'id_lowongan');
     }
 }

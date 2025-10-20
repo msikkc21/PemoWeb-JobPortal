@@ -16,4 +16,9 @@ class Keahlian extends Model
         'kategori',
         'deskripsi',
     ];
+
+    public function lowongans()
+    {
+        return $this->belongsToMany(Lowongan::class, 'lowongan_keahlians', 'id_keahlian', 'id_lowongan');
+    }
 }

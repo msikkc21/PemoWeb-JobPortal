@@ -8,10 +8,8 @@ export default function ViewJobs({ auth, lowongans = [], skills = [] }) {
     const [selectedJobType, setSelectedJobType] = useState('');
     const [selectedLevel, setSelectedLevel] = useState('');
 
-    const user = auth?.user;
-    const isPencariKerja = user?.is_pencari_kerja;
-    const isPerusahaan = user?.is_perusahaan;
-    const companyId = user?.profil_perusahaan?.id; // sesuaikan nama relasi (profilPerusahaan di PHP akan jadi profil_perusahaan)
+    const isPencariKerja = auth?.user?.is_pencari_kerja;
+    const isPerusahaan = auth?.user?.is_perusahaan;
 
     // Filter lowongan berdasarkan pencarian
     const filteredLowongans = lowongans.filter(lowongan => {
@@ -50,9 +48,19 @@ export default function ViewJobs({ auth, lowongans = [], skills = [] }) {
     return (
         <AuthenticatedLayout
             header={
-                <h2 className="text-xl font-semibold leading-tight text-gray-800">
-                    Lowongan Pekerjaan
-                </h2>
+                <div className='flex justify-between items-center'>
+                    <h2 className="text-xl font-semibold leading-tight text-gray-800">
+                    Lowongan Pekerjaan</h2>
+                    {isPerusahaan ? (
+                        <>
+                            <Link href={route('company.jobs.create')} className="px-4 py-2 text-sm bg-primary text-white rounded-md hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-primary">
+                                Tambah Lowongan
+                            </Link>
+                        </>
+                    ) : null}
+                    
+                </div>
+                
             }
         >
             <Head title="Lowongan Pekerjaan" />
@@ -246,12 +254,46 @@ export default function ViewJobs({ auth, lowongans = [], skills = [] }) {
                                             </div>
                                             
                                             <div className="flex space-x-3">
-                                                <button className="px-4 py-2 text-primary border border-primary rounded-md hover:bg-primary/5 focus:outline-none focus:ring-2 focus:ring-primary">
-                                                    Detail
-                                                </button>
-                                                <button className="px-4 py-2 bg-primary text-white rounded-md hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-primary">
-                                                    Lamar
-                                                </button>
+                                                {isPerusahaan ? (
+                                                    <>
+                                                        <Link
+                                                            href={route('company.jobs.edit', lowongan.id_lowongan)}
+                                                            className="px-4 py-2 text-primary border border-primary rounded-md hover:bg-primary/5 focus:outline-none focus:ring-2 focus:ring-primary"
+                                                        >
+                                                            Edit
+                                                        </Link>
+                                                        <button
+                                                            onClick={() => {
+                                                                if (confirm('Yakin hapus lowongan ini?')) {
+                                                                    router.delete(route('company.jobs.destroy', lowongan.id_lowongan));
+                                                                }
+                                                            }}
+                                                            className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-600"
+                                                        >
+                                                            Hapus
+                                                        </button>
+                                                    </>
+                                                ) : (
+                                                    <>
+                                                        <Link
+                                                            href={route('jobs.show', lowongan.id_lowongan)}
+                                                            className="px-4 py-2 text-primary border border-primary rounded-md hover:bg-primary/5 focus:outline-none focus:ring-2 focus:ring-primary"
+                                                        >
+                                                            Detail
+                                                        </Link>
+                                                        <button
+                                                            onClick={() => router.visit(`/lowongan/${lowongan.id_lowongan}/lamar`)}
+                                                            disabled={lowongan.status !== 'dibuka'}
+                                                            className={`px-4 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-primary ${
+                                                                lowongan.status === 'dibuka'
+                                                                    ? 'bg-primary text-white hover:bg-primary/90'
+                                                                    : 'bg-gray-200 text-gray-500 cursor-not-allowed'
+                                                            }`}
+                                                        >
+                                                            Lamar
+                                                        </button>
+                                                    </>
+                                                )}
                                             </div>
                                         </div>
                                     </div>

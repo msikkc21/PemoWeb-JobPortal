@@ -25,12 +25,12 @@ class Pengguna extends Authenticatable
         'remember_token',
     ];
 
-    public function profilPencariKerja(): HasOne
+    public function jobSeekerProfile(): HasOne
     {
         return $this->hasOne(JobSeekerProfile::class, 'id_pengguna', 'id_pengguna');
     }
 
-    public function profilPerusahaan(): HasOne
+    public function companyProfile(): HasOne
     {
         return $this->hasOne(CompanyProfile::class, 'id_pengguna', 'id_pengguna');
     }

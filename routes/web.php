@@ -50,10 +50,28 @@ Route::middleware(['auth', 'permission:upload_resume'])->group(function () {
 
 Route::middleware(['auth', 'permission:view_jobs'])->group(function () {
     Route::get('/view_jobs', [LowonganController::class, 'index'])->name('jobs.index');
-    Route::get('/view_jobs/{job}', [LowonganController::class, 'show'])->name('jobs.show');
-    Route::get('/view_jobs/{job}/edit', [LowonganController::class, 'edit'])->name('jobs.edit');
-    Route::delete('/view_jobs/{job}', [LowonganController::class, 'destroy'])->name('jobs.destroy');
-    Route::post('/view_jobs/{job}/apply', [LowonganController::class, 'apply'])->name('jobs.apply');
+    Route::get('/view_jobs/{id}', [LowonganController::class, 'show'])->name('jobs.show');
+});
+
+Route::middleware(['auth', 'permission:create_job'])->group(function () {
+    // Route untuk perusahaan
+    Route::prefix('company')->name('company.')->group(function () {
+        Route::get('/jobs/create', [LowonganController::class, 'create'])->name('jobs.create');
+        Route::post('/jobs', [LowonganController::class, 'store'])->name('jobs.store');
+    });
+});
+
+Route::middleware(['auth', 'permission:edit_job'])->group(function () {
+    Route::prefix('company')->name('company.')->group(function () {
+        Route::get('/jobs/{id}/edit', [LowonganController::class, 'edit'])->name('jobs.edit');
+        Route::put('/jobs/{id}', [LowonganController::class, 'update'])->name('jobs.update');
+    });
+});
+
+Route::middleware(['auth', 'permission:delete_job'])->group(function () {
+    Route::prefix('company')->name('company.')->group(function () {
+        Route::delete('/jobs/{id}', [LowonganController::class, 'destroy'])->name('jobs.destroy');
+    });
 });
 
 require __DIR__.'/auth.php';
