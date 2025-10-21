@@ -5,15 +5,23 @@ use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
-Route::get('/', function () {
-    return Inertia::render('Welcome', [
-        'canLogin' => Route::has('login'),
-        'canRegister' => Route::has('register'),
-        'laravelVersion' => Application::VERSION,
-        'phpVersion' => PHP_VERSION,
-    ]);
-});
+/*
+================
+MODULAR ROUTE LOADING
+================
 
+Load all route files from the "modules" directory to keep routes organized and modular.
+*/
+
+foreach (glob(__DIR__.'/modules/*.php') as $routeFile) {
+    require $routeFile;
+}
+
+
+
+/*
+ROUTE FROM LARAVEL STARTER TEMPLATE
+*/
 Route::get('/dashboard', function () {
     return Inertia::render('Dashboard');
 })->middleware(['auth', 'verified'])->name('dashboard');
@@ -24,4 +32,9 @@ Route::middleware('auth')->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 
-require __DIR__.'/auth.php';
+
+
+/*
+Load the authentication routes.
+*/
+require __DIR__ . '/auth.php';
