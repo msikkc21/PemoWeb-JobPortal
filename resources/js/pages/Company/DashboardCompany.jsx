@@ -250,7 +250,7 @@ export default function DashboardCompany({ auth, statistics, recentApplications,
                             </h2>
                             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                                 <Link
-                                    href="#"
+                                    href="/company/jobs/create"
                                     className="flex items-center p-4 border border-gray-300 rounded-lg hover:border-indigo-500 hover:bg-indigo-50 transition"
                                 >
                                     <svg className="h-8 w-8 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -259,7 +259,7 @@ export default function DashboardCompany({ auth, statistics, recentApplications,
                                     <span className="ml-3 font-medium text-gray-900">Posting Lowongan Baru</span>
                                 </Link>
                                 <Link
-                                    href="#"
+                                    href="/company/jobs"
                                     className="flex items-center p-4 border border-gray-300 rounded-lg hover:border-indigo-500 hover:bg-indigo-50 transition"
                                 >
                                     <svg className="h-8 w-8 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">

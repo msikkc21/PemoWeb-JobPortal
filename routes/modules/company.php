@@ -49,6 +49,16 @@ Route::middleware(['auth', 'check.permission:company', 'ensure.profile'])->group
     Route::get('/company/subscription/invoice/{id}', [SubscriptionController::class, 'invoice'])
         ->name('company.subscription.invoice');
 
+    // Jobs routes
+    Route::resource('/company/jobs', \App\Http\Controllers\Company\JobController::class)
+        ->names('company.jobs');
+
+    Route::post('/company/jobs/{job}/submit', [\App\Http\Controllers\Company\JobController::class, 'submitForReview'])
+        ->name('company.jobs.submit');
+
+    Route::post('/company/jobs/{job}/close', [\App\Http\Controllers\Company\JobController::class, 'close'])
+        ->name('company.jobs.close');
+
     // Tambahkan route company lainnya di sini
     // Semua route di group ini akan memerlukan profil lengkap
 });
