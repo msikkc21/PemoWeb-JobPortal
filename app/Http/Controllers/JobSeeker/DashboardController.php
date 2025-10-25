@@ -3,63 +3,63 @@
 namespace App\Http\Controllers\JobSeeker;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
+use App\Models\Application;
+use App\Models\Job;
+use App\Models\JobSeekerSkill;
+use Inertia\Inertia;
+use Illuminate\Support\Facades\Auth;
 
 class DashboardController extends Controller
 {
     /**
-     * Display a listing of the resource.
+     * Display the job seeker dashboard with statistics.
      */
     public function index()
     {
-        //
-    }
+        $jobSeeker = Auth::user()->jobSeeker;
 
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
-    {
-        //
-    }
+        // Get application statistics
+        $totalApplications = Application::where('job_seeker_id', $jobSeeker->id)->count();
+        
+        $pendingApplications = Application::where('job_seeker_id', $jobSeeker->id)
+            ->where('status', 'pending')
+            ->count();
+        
+        $acceptedApplications = Application::where('job_seeker_id', $jobSeeker->id)
+            ->where('status', 'accepted')
+            ->count();
+        
+        $rejectedApplications = Application::where('job_seeker_id', $jobSeeker->id)
+            ->where('status', 'rejected')
+            ->count();
 
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(Request $request)
-    {
-        //
-    }
+        // Get skills count
+        $totalSkills = JobSeekerSkill::where('job_seeker_id', $jobSeeker->id)->count();
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(string $id)
-    {
-        //
-    }
+        // Get recent applications
+        $recentApplications = Application::with(['job.company'])
+            ->where('job_seeker_id', $jobSeeker->id)
+            ->orderBy('created_at', 'desc')
+            ->take(5)
+            ->get();
 
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(string $id)
-    {
-        //
-    }
+        // Get recommended jobs (active jobs)
+        $recommendedJobs = Job::with('company')
+            ->where('status', 'active')
+            ->orderBy('created_at', 'desc')
+            ->take(6)
+            ->get();
 
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, string $id)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(string $id)
-    {
-        //
+        return Inertia::render('JobSeeker/DashboardJobSeeker', [
+            'statistics' => [
+                'totalApplications' => $totalApplications,
+                'pendingApplications' => $pendingApplications,
+                'acceptedApplications' => $acceptedApplications,
+                'rejectedApplications' => $rejectedApplications,
+                'totalSkills' => $totalSkills,
+            ],
+            'recentApplications' => $recentApplications,
+            'recommendedJobs' => $recommendedJobs,
+        ]);
     }
 }

@@ -16,6 +16,7 @@ return Application::configure(basePath: dirname(__DIR__))
 
         $middleware->alias([
             'check.permission' => \App\Http\Middleware\CheckPermission::class,
+            'ensure.profile' => \App\Http\Middleware\EnsureProfileCompleted::class,
         ]);
 
         $middleware->web(append: [

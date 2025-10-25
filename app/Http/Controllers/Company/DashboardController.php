@@ -3,63 +3,69 @@
 namespace App\Http\Controllers\Company;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
+use App\Models\Job;
+use App\Models\Application;
+use Inertia\Inertia;
+use Illuminate\Support\Facades\Auth;
 
 class DashboardController extends Controller
 {
     /**
-     * Display a listing of the resource.
+     * Display the company dashboard with statistics.
      */
     public function index()
     {
-        //
-    }
+        $company = Auth::user()->company;
 
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
-    {
-        //
-    }
+        // Get job statistics
+        $totalJobs = Job::where('company_id', $company->id)->count();
+        $activeJobs = Job::where('company_id', $company->id)
+            ->where('status', 'active')
+            ->count();
+        $closedJobs = Job::where('company_id', $company->id)
+            ->where('status', 'closed')
+            ->count();
 
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(Request $request)
-    {
-        //
-    }
+        // Get applications statistics
+        $totalApplications = Application::whereHas('job', function ($query) use ($company) {
+            $query->where('company_id', $company->id);
+        })->count();
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(string $id)
-    {
-        //
-    }
+        $pendingApplications = Application::whereHas('job', function ($query) use ($company) {
+            $query->where('company_id', $company->id);
+        })->where('status', 'pending')->count();
 
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(string $id)
-    {
-        //
-    }
+        $acceptedApplications = Application::whereHas('job', function ($query) use ($company) {
+            $query->where('company_id', $company->id);
+        })->where('status', 'accepted')->count();
 
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, string $id)
-    {
-        //
-    }
+        // Get recent applications
+        $recentApplications = Application::with(['jobSeeker.user', 'job'])
+            ->whereHas('job', function ($query) use ($company) {
+                $query->where('company_id', $company->id);
+            })
+            ->orderBy('created_at', 'desc')
+            ->take(5)
+            ->get();
 
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(string $id)
-    {
-        //
+        // Get active jobs list
+        $activeJobsList = Job::where('company_id', $company->id)
+            ->where('status', 'active')
+            ->orderBy('created_at', 'desc')
+            ->take(5)
+            ->get();
+
+        return Inertia::render('Company/DashboardCompany', [
+            'statistics' => [
+                'totalJobs' => $totalJobs,
+                'activeJobs' => $activeJobs,
+                'closedJobs' => $closedJobs,
+                'totalApplications' => $totalApplications,
+                'pendingApplications' => $pendingApplications,
+                'acceptedApplications' => $acceptedApplications,
+            ],
+            'recentApplications' => $recentApplications,
+            'activeJobs' => $activeJobsList,
+        ]);
     }
 }

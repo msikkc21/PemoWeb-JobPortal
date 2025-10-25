@@ -90,4 +90,20 @@ class JobSeeker extends Model
     {
         return $this->skills()->where('name', $skillName)->exists();
     }
+
+    /**
+     * Cek apakah profil job seeker sudah lengkap
+     * 
+     * Profil dianggap lengkap jika field-field penting sudah terisi
+     */
+    public function isProfileComplete(): bool
+    {
+        return !empty($this->name)
+            && !empty($this->gender)
+            && !empty($this->birth_place)
+            && !empty($this->birth_date)
+            && !empty($this->phone)
+            && !empty($this->address)
+            && !empty($this->education);
+    }
 }

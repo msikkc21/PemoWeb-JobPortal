@@ -3,63 +3,63 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
+use App\Models\User;
+use App\Models\Company;
+use App\Models\JobSeeker;
+use App\Models\Job;
+use App\Models\Application;
+use Inertia\Inertia;
 
 class DashboardController extends Controller
 {
     /**
-     * Display a listing of the resource.
+     * Display the admin dashboard with statistics.
      */
     public function index()
     {
-        //
-    }
+        // Get user statistics
+        $totalUsers = User::count();
+        $totalCompanies = Company::count();
+        $totalJobSeekers = JobSeeker::count();
 
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
-    {
-        //
-    }
+        // Get job statistics
+        $totalJobs = Job::count();
+        $activeJobs = Job::where('status', 'active')->count();
+        $closedJobs = Job::where('status', 'closed')->count();
 
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(Request $request)
-    {
-        //
-    }
+        // Get application statistics
+        $totalApplications = Application::count();
+        $pendingApplications = Application::where('status', 'pending')->count();
+        $acceptedApplications = Application::where('status', 'accepted')->count();
+        $rejectedApplications = Application::where('status', 'rejected')->count();
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(string $id)
-    {
-        //
-    }
+        // Get recent users
+        $recentUsers = User::with('role')
+            ->orderBy('created_at', 'desc')
+            ->take(5)
+            ->get();
 
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(string $id)
-    {
-        //
-    }
+        // Get recent jobs
+        $recentJobs = Job::with('company')
+            ->orderBy('created_at', 'desc')
+            ->take(5)
+            ->get();
 
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, string $id)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(string $id)
-    {
-        //
+        return Inertia::render('Admin/DashboardAdmin', [
+            'statistics' => [
+                'totalUsers' => $totalUsers,
+                'totalCompanies' => $totalCompanies,
+                'totalJobSeekers' => $totalJobSeekers,
+                'totalJobs' => $totalJobs,
+                'activeJobs' => $activeJobs,
+                'closedJobs' => $closedJobs,
+                'totalApplications' => $totalApplications,
+                'pendingApplications' => $pendingApplications,
+                'acceptedApplications' => $acceptedApplications,
+                'rejectedApplications' => $rejectedApplications,
+            ],
+            'recentUsers' => $recentUsers,
+            'recentJobs' => $recentJobs,
+        ]);
     }
 }

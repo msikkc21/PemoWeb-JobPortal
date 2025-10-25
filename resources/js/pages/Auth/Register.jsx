@@ -11,6 +11,7 @@ export default function Register() {
         email: '',
         password: '',
         password_confirmation: '',
+        account_type: 'jobseeker',
     });
 
     const submit = (e) => {
@@ -100,6 +101,24 @@ export default function Register() {
                         message={errors.password_confirmation}
                         className="mt-2"
                     />
+                </div>
+
+                <div className="mt-4">
+                    <InputLabel htmlFor="account_type" value="Tipe Akun" />
+
+                    <select
+                        id="account_type"
+                        name="account_type"
+                        value={data.account_type}
+                        className="mt-1 block w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm"
+                        onChange={(e) => setData('account_type', e.target.value)}
+                        required
+                    >
+                        <option value="jobseeker">Job Seeker</option>
+                        <option value="company">Company</option>
+                    </select>
+
+                    <InputError message={errors.account_type} className="mt-2" />
                 </div>
 
                 <div className="mt-4 flex items-center justify-end">

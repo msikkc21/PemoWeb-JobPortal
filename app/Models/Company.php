@@ -74,4 +74,20 @@ class Company extends Model
             ->whereIn('status', ['approved', 'open'])
             ->count();
     }
+
+    /**
+     * Cek apakah profil company sudah lengkap
+     * 
+     * Profil dianggap lengkap jika field-field wajib sudah terisi
+     */
+    public function isProfileComplete(): bool
+    {
+        return !empty($this->company_name)
+            && !empty($this->industry)
+            && !empty($this->description)
+            && !empty($this->location)
+            && !empty($this->company_email)
+            && !empty($this->phone)
+            && !empty($this->address);
+    }
 }
