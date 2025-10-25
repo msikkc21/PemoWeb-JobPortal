@@ -35,4 +35,10 @@ return [
         ],
     ],
 
+    'payment' => [
+        'base_url' => env('PAYMENT_BASE_URL', 'https://payment-dummy.doovera.com/api/v1'),
+        'key' => env('PAYMENT_API_KEY'),
+        'webhook_secret' => env('PAYMENT_WEBHOOK_SECRET'),
+    ],
+
 ];

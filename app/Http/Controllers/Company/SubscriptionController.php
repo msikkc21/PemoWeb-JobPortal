@@ -9,6 +9,8 @@ use App\Models\SubscriptionPayment;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 use Inertia\Inertia;
 use Carbon\Carbon;
 
@@ -77,46 +79,47 @@ class SubscriptionController extends Controller
         if ($existingSubscription) {
             return redirect()
                 ->back()
-                ->with('error', 'Anda masih memiliki paket aktif atau menunggu pembayaran. Selesaikan terlebih dahulu sebelum memilih paket baru.');
+                ->with('error', 'Anda masih memiliki paket aktif atau menunggu pembayaran.');
         }
 
         DB::beginTransaction();
         try {
-            // Calculate dates
-            $startDate = Carbon::now();
-            $endDate = $startDate->copy()->addDays($plan->duration_in_days);
+            $externalId = 'INV-' . strtoupper(uniqid());
 
-            // Create subscription
+            // Create subscription (starts_at and ends_at will be set when payment is confirmed)
             $subscription = Subscription::create([
                 'company_id' => $company->id,
                 'plan_id' => $plan->id,
                 'status' => 'pending_payment',
-                'start_date' => $startDate,
-                'end_date' => $endDate,
-                'payment_status' => 'pending',
+                'starts_at' => now(), // Set initial timestamp
+                'ends_at' => null, // Will be calculated after payment
+                'renews_at' => null, // Will be calculated after payment
             ]);
 
-            // Create initial payment record
-            $payment = SubscriptionPayment::create([
+            // Create payment record with external_id (belum ke gateway)
+            SubscriptionPayment::create([
                 'subscription_id' => $subscription->id,
                 'amount' => $plan->price_amount,
-                'payment_method' => 'bank_transfer', // Default
+                'payment_method' => 'bank_transfer',
                 'status' => 'pending',
-                'transaction_id' => 'TRX-' . strtoupper(uniqid()),
-                'payment_date' => null,
+                'external_id' => $externalId,
+                'payment_url' => null,
+                'va_number' => null,
+                'expired_at' => now()->addHours(24),
             ]);
 
             DB::commit();
 
             return redirect()
                 ->route('company.subscription.invoice', $subscription->id)
-                ->with('success', 'Paket berhasil dipilih! Silakan lakukan pembayaran.');
+                ->with('success', 'Paket berhasil dipilih. Silakan lanjut ke pembayaran.');
 
         } catch (\Exception $e) {
             DB::rollBack();
+            Log::error('Activate plan error', ['error' => $e->getMessage()]);
             return redirect()
                 ->back()
-                ->with('error', 'Terjadi kesalahan saat memproses paket. Silakan coba lagi.');
+                ->with('error', 'Gagal membuat langganan.');
         }
     }
 
@@ -145,4 +148,227 @@ class SubscriptionController extends Controller
             'vaNumber' => $vaNumber,
         ]);
     }
+
+    /**
+     * Create payment via payment gateway.
+     * Returns JSON response for frontend to handle.
+     */
+    public function createPayment(Request $request)
+    {
+        $request->validate([
+            'external_id' => 'required|string',
+        ]);
+
+        $company = Auth::user()->company;
+        
+        // Find payment by external_id
+        $payment = SubscriptionPayment::with('subscription.plan')
+            ->where('external_id', $request->external_id)
+            ->firstOrFail();
+
+        // Check authorization
+        if ($payment->subscription->company_id !== $company->id) {
+            abort(403, 'Unauthorized access.');
+        }
+
+        $plan = $payment->subscription->plan;
+
+        try {
+            // Call payment gateway API
+            $response = Http::withHeaders([
+                'X-API-Key' => config('services.payment.key'),
+                'Accept' => 'application/json',
+                'Content-Type' => 'application/json',
+            ])->post(config('services.payment.base_url') . '/virtual-account/create', [
+                'external_id' => $payment->external_id,
+                'amount' => $plan->price_amount,
+                'customer_name' => $company->company_name,
+                'customer_email' => Auth::user()->email,
+                'description' => 'Pembayaran Paket Langganan',
+                'expired_duration' => 24,
+                'metadata' => [
+                    'subscription_id' => $payment->subscription->id,
+                    'plan_id' => $plan->id,
+                ],
+            ]);
+
+            if (!$response->successful()) {
+                Log::error('Payment gateway error', [
+                    'response' => $response->body(),
+                    'status' => $response->status(),
+                    'external_id' => $payment->external_id,
+                ]);
+
+                return back()->with('error', 'Gagal menghubungi gateway pembayaran.');
+            }
+
+            $data = $response->json()['data'] ?? [];
+            $paymentUrl = $data['payment_url'] ?? null;
+
+            // Update payment record
+            $payment->update([
+                'status' => 'pending',
+                'va_number' => $data['va_number'] ?? null,
+                'payment_url' => $paymentUrl,
+                'expired_at' => isset($data['expired_at']) 
+                    ? Carbon::parse($data['expired_at']) 
+                    : now()->addHours(24),
+            ]);
+
+            // Update subscription status to pending_payment
+            $payment->subscription->update([
+                'status' => 'pending_payment',
+            ]);
+
+            // Return success redirect to reload invoice with new payment_url
+            return redirect()
+                ->route('company.subscription.invoice', $payment->subscription->id)
+                ->with('success', 'Checkout berhasil! Silakan lanjutkan pembayaran.');
+
+        } catch (\Exception $e) {
+            Log::error('Payment creation error', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+                'external_id' => $request->external_id,
+            ]);
+
+            return back()->with('error', 'Gagal membuat pembayaran. Silakan coba lagi.');
+        }
+    }
+
+    /**
+     * Continue to payment page.
+     */
+    public function continuePayment()
+    {
+        $company = Auth::user()->company;
+
+        // Find pending payment that's not expired
+        $payment = SubscriptionPayment::whereHas('subscription', function ($query) use ($company) {
+                $query->where('company_id', $company->id);
+            })
+            ->where('status', 'pending')
+            ->where(function ($query) {
+                $query->whereNull('expired_at')
+                    ->orWhere('expired_at', '>', now());
+            })
+            ->latest()
+            ->first();
+
+        if (!$payment) {
+            return redirect()
+                ->route('company.subscription.index')
+                ->with('warning', 'Tidak ada tagihan pembayaran yang tersedia.');
+        }
+
+        // If payment URL exists, redirect to payment page
+        if ($payment->payment_url) {
+            return redirect()->away($payment->payment_url);
+        }
+
+        // Otherwise, redirect to invoice
+        return redirect()
+            ->route('company.subscription.invoice', $payment->subscription_id)
+            ->with('info', 'Silakan lakukan pembayaran sesuai instruksi.');
+    }
+
+    /**
+     * Check payment status via gateway API.
+     */
+    public function checkPayment($externalId)
+    {
+        $payment = SubscriptionPayment::with('subscription.plan')
+            ->where('external_id', $externalId)
+            ->firstOrFail();
+
+        // Verify authorization
+        if ($payment->subscription->company_id !== Auth::user()->company->id) {
+            abort(403, 'Unauthorized access.');
+        }
+
+        // Check if already paid
+        if ($payment->status === 'paid') {
+            return redirect()
+                ->route('company.subscription.invoice', $payment->subscription->id)
+                ->with('info', 'Pembayaran sudah berhasil dikonfirmasi sebelumnya.');
+        }
+
+        try {
+            // Call payment gateway to check status
+            $response = Http::withHeaders([
+                'X-API-Key' => config('services.payment.key'),
+                'Accept' => 'application/json',
+            ])->get(config('services.payment.base_url') . '/virtual-account/' . $payment->va_number . '/status');
+
+            if (!$response->successful()) {
+                Log::error('Payment check gateway error', [
+                    'response' => $response->body(),
+                    'status' => $response->status(),
+                    'external_id' => $externalId,
+                ]);
+
+                return back()->with('error', 'Gagal memeriksa status pembayaran dari gateway.');
+            }
+
+            $data = $response->json()['data'] ?? [];
+            $status = strtoupper($data['status'] ?? 'PENDING');
+            
+            if ($status === 'PAID') {
+                DB::beginTransaction();
+                try {
+                    $now = now();
+                    $plan = $payment->subscription->plan;
+                    
+                    // Calculate subscription dates
+                    $startsAt = $now;
+                    $endsAt = $now->copy()->addDays($plan->duration_in_days);
+                    $renewsAt = $endsAt->copy()->subDays(3); // 3 days before expiry
+
+                    // Update payment status
+                    $payment->update([
+                        'status' => 'paid',
+                        'paid_at' => $now,
+                    ]);
+                    
+                    // Update subscription with calculated dates
+                    $payment->subscription->update([
+                        'status' => 'active',
+                        'payment_status' => 'paid',
+                        'starts_at' => $startsAt,
+                        'ends_at' => $endsAt,
+                        'renews_at' => $renewsAt,
+                    ]);
+
+                    DB::commit();
+                    
+                    return Inertia::render('Company/Subscription/Success', [
+                        'payment' => $payment->fresh(),
+                        'subscription' => $payment->subscription->fresh(),
+                    ]);
+
+                } catch (\Exception $e) {
+                    DB::rollBack();
+                    Log::error('Payment update error', [
+                        'error' => $e->getMessage(),
+                        'trace' => $e->getTraceAsString(),
+                        'external_id' => $externalId,
+                    ]);
+                    throw $e;
+                }
+            }
+
+            // Payment not yet confirmed
+            return back()->with('info', 'Pembayaran belum dikonfirmasi. Status saat ini: ' . $status);
+
+        } catch (\Exception $e) {
+            Log::error('Payment check error', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+                'external_id' => $externalId,
+            ]);
+
+            return back()->with('error', 'Gagal memeriksa status pembayaran. Silakan coba lagi.');
+        }
+    }
 }
+

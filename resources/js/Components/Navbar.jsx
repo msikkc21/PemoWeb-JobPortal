@@ -27,7 +27,7 @@ export default function Navbar() {
                     { name: 'Dashboard', route: 'company.dashboard' },
                     { name: 'Jobs', route: 'admin.dashboard' },
                     { name: 'Applicants', route: 'admin.dashboard' },
-                    { name: 'Subscription', route: 'admin.dashboard' },
+                    { name: 'Subscription', route: 'company.subscription.index' },
                     { name: 'Profile', route: 'company.profile.show' },
                 ];
             case 'jobseeker':

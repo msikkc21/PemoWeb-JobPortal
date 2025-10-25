@@ -49,6 +49,16 @@ Route::middleware(['auth', 'check.permission:company', 'ensure.profile'])->group
     Route::get('/company/subscription/invoice/{id}', [SubscriptionController::class, 'invoice'])
         ->name('company.subscription.invoice');
 
+    // Payment routes
+    Route::post('/company/subscription/payment/create', [SubscriptionController::class, 'createPayment'])
+        ->name('company.subscription.payment.create');
+    
+    Route::get('/company/subscription/payment/continue', [SubscriptionController::class, 'continuePayment'])
+        ->name('company.subscription.payment.continue');
+    
+    Route::get('/company/subscription/payment/check/{external_id}', [SubscriptionController::class, 'checkPayment'])
+        ->name('company.subscription.payment.check');
+
     // Tambahkan route company lainnya di sini
     // Semua route di group ini akan memerlukan profil lengkap
 });
