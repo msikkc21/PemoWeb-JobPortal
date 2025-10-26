@@ -26,7 +26,7 @@ export default function Navbar() {
                 return [
                     { name: 'Dashboard', route: 'company.dashboard' },
                     { name: 'Jobs', route: 'admin.dashboard' },
-                    { name: 'Applicants', route: 'admin.dashboard' },
+                    { name: 'Applicants', route: 'company.applicants.index' },
                     { name: 'Subscription', route: 'company.subscription.index' },
                     { name: 'Profile', route: 'company.profile.show' },
                 ];

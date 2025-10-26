@@ -226,7 +226,7 @@ export default function DashboardCompany({ auth, statistics, recentApplications,
                                                 </p>
                                                 <div className="flex justify-between items-center mt-1">
                                                     <p className="text-sm text-gray-600">
-                                                        {job.location} • {job.type}
+                                                        {job.location} • {job.job_type}
                                                     </p>
                                                     <p className="text-xs text-gray-500">
                                                         {new Date(job.created_at).toLocaleDateString('id-ID')}

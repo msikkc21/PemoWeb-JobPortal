@@ -20,7 +20,7 @@ class DashboardController extends Controller
         // Get job statistics
         $totalJobs = Job::where('company_id', $company->id)->count();
         $activeJobs = Job::where('company_id', $company->id)
-            ->where('status', 'active')
+            ->where('status', 'approved')
             ->count();
         $closedJobs = Job::where('company_id', $company->id)
             ->where('status', 'closed')
@@ -50,7 +50,7 @@ class DashboardController extends Controller
 
         // Get active jobs list
         $activeJobsList = Job::where('company_id', $company->id)
-            ->where('status', 'active')
+            ->where('status', 'approved')
             ->orderBy('created_at', 'desc')
             ->take(5)
             ->get();

@@ -2,17 +2,53 @@
 
 namespace App\Http\Controllers\Company;
 
-use App\Http\Controllers\Controller;
+use Inertia\Inertia;
+use App\Models\Application;
 use Illuminate\Http\Request;
+use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\Auth;
 
 class ApplicantController extends Controller
 {
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        //
+        $company = Auth::user()->company;
+        $search = $request->input('search');
+        $status = $request->input('status');
+
+        $query = Application::with(['job', 'jobSeeker'])
+            ->whereHas('job', function ($q) use ($company) {
+                $q->where('company_id', $company->id);
+            });
+        
+        // Filter by applicant name (jobSeeker -> user -> name)
+        if (!empty($search)) {
+            $query->whereHas('jobSeeker', function ($q) use ($search) {
+                $q->where('name', 'like', '%' . $search . '%');
+            });
+        }
+
+        // filter by status
+        if (!empty($status)) {
+            $query->where('status', $status);
+        }
+
+        // ambil hasil (tanpa pagination) dan urutkan berdasarkan application_date desc
+        $applications = $query->orderBy('application_date', 'desc')->get();
+
+        $totalAplications = $applications->count();
+
+        return Inertia::render('Company/Applicants/Index', [
+            'applications' => $applications,
+            'totalApplications' => $totalAplications,
+            'filters' => [
+                'search' => $search,
+                'status' => $status,
+            ],
+        ]);
     }
 
     /**
@@ -36,7 +72,68 @@ class ApplicantController extends Controller
      */
     public function show(string $id)
     {
-        //
+        $company = Auth::user()->company;
+
+        $application = Application::with([
+            'job',                     // job_post
+            'resume',                  // resume
+            'jobSeeker',               // job seeker and associated user
+            'jobSeeker.skills'         // job seeker skills pivot (level, experience_years)
+        ])->findOrFail($id);
+
+        // Owner check: only company that owns the job can view
+        if ($company && isset($application->job->company_id) && $application->job->company_id !== $company->id) {
+            abort(403, 'Anda tidak berwenang melihat lamaran ini.');
+        }
+
+        // Map for Inertia (avoid sending heavy relations)
+        $data = [
+            'id' => $application->id,
+            'status' => $application->status,
+            'application_date' => $application->application_date,
+            'notes' => $application->notes,
+            'created_at' => $application->created_at,
+            'job' => $application->job ? [
+                'id' => $application->job->id,
+                'title' => $application->job->title ?? $application->job->name ?? null,
+                'company_id' => $application->job->company_id ?? null,
+                'location' => $application->job->location ?? null,
+                'job_type' => $application->job->job_type ?? null,
+            ] : null,
+            'resume' => $application->resume ? [
+                'id' => $application->resume->id,
+                'cv_file' => $application->resume->cv_file,
+                'upload_date' => $application->resume->upload_date,
+                'parsed_data' => $application->resume->parsed_data,
+            ] : null,
+            'job_seeker' => $application->jobSeeker ? [
+                'id' => $application->jobSeeker->id,
+                'name' => $application->jobSeeker->name ?? optional($application->jobSeeker->user)->name,
+                'email' => optional($application->jobSeeker->user)->email,
+                'phone' => $application->jobSeeker->phone ?? null,
+                'birth_date' => $application->jobSeeker->birth_date ?? null,
+                'education' => $application->jobSeeker->education ?? null,
+                'experience' => $application->jobSeeker->experience ?? null,
+                'address' => $application->jobSeeker->address ?? null,
+                'linkedin' => $application->jobSeeker->linkedin ?? null,
+                'github' => $application->jobSeeker->github ?? null,
+                'portfolio' => $application->jobSeeker->portfolio ?? null,
+                'skills' => $application->jobSeeker->skills ? $application->jobSeeker->skills->map(function($s){
+                    return [
+                        'id' => $s->id,
+                        'name' => $s->name ?? $s->nama_keahlian ?? null,
+                        'pivot' => [
+                            'level' => $s->pivot->level ?? null,
+                            'experience_years' => $s->pivot->experience_years ?? null,
+                        ]
+                    ];
+                })->values() : []
+            ] : null,
+        ];
+
+        return Inertia::render('Company/Applicants/Show', [
+            'application' => $data,
+        ]);
     }
 
     /**
