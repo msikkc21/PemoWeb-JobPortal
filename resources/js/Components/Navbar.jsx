@@ -1,15 +1,15 @@
-import { Link, usePage } from '@inertiajs/react';
+import ApplicationLogo from '@/Components/ApplicationLogo';
 import Dropdown from '@/Components/Dropdown';
 import NavLink from '@/Components/NavLink';
 import ResponsiveNavLink from '@/Components/ResponsiveNavLink';
-import ApplicationLogo from '@/Components/ApplicationLogo';
+import { Link, usePage } from '@inertiajs/react';
 import { useState } from 'react';
 
 export default function Navbar() {
     const { auth } = usePage().props;
     const user = auth.user;
     const role = user?.role?.name || 'guest';
-    
+
     const [showingNavigationDropdown, setShowingNavigationDropdown] = useState(false);
 
     // Menu berdasarkan role
@@ -27,6 +27,7 @@ export default function Navbar() {
                     { name: 'Dashboard', route: 'company.dashboard' },
                     { name: 'Jobs', route: 'admin.dashboard' },
                     { name: 'Applicants', route: 'company.applicants.index' },
+                    { name: 'Interview', route: 'company.interviews.index' },
                     { name: 'Subscription', route: 'company.subscription.index' },
                     { name: 'Profile', route: 'company.profile.show' },
                 ];
@@ -72,11 +73,7 @@ export default function Navbar() {
                         {/* Desktop Menu */}
                         <div className="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
                             {menuItems.map((item) => (
-                                <NavLink
-                                    key={item.route}
-                                    href={route(item.route)}
-                                    active={route().current(item.route)}
-                                >
+                                <NavLink key={item.route} href={route(item.route)} active={route().current(item.route)}>
                                     {item.name}
                                 </NavLink>
                             ))}
@@ -95,17 +92,13 @@ export default function Navbar() {
                                         >
                                             {/* Avatar */}
                                             {photoPath ? (
-                                                <img
-                                                    src={photoPath}
-                                                    alt={user.name}
-                                                    className="h-8 w-8 rounded-full object-cover mr-2"
-                                                />
+                                                <img src={photoPath} alt={user.name} className="mr-2 h-8 w-8 rounded-full object-cover" />
                                             ) : (
-                                                <div className="h-8 w-8 rounded-full bg-indigo-600 flex items-center justify-center text-white font-semibold mr-2">
+                                                <div className="mr-2 flex h-8 w-8 items-center justify-center rounded-full bg-indigo-600 font-semibold text-white">
                                                     {user.name.charAt(0).toUpperCase()}
                                                 </div>
                                             )}
-                                            
+
                                             <span className="mr-1">{user.name}</span>
 
                                             <svg
@@ -125,27 +118,19 @@ export default function Navbar() {
                                 </Dropdown.Trigger>
 
                                 <Dropdown.Content>
-                                    <div className="px-4 py-2 text-xs text-gray-400 border-b">
+                                    <div className="border-b px-4 py-2 text-xs text-gray-400">
                                         Role: <span className="font-semibold capitalize">{role}</span>
                                     </div>
-                                    
+
                                     {role.toLowerCase() === 'company' && (
-                                        <Dropdown.Link href={route('company.profile.show')}>
-                                            View Profile
-                                        </Dropdown.Link>
+                                        <Dropdown.Link href={route('company.profile.show')}>View Profile</Dropdown.Link>
                                     )}
-                                    
+
                                     {role.toLowerCase() === 'jobseeker' && (
-                                        <Dropdown.Link href={route('jobseeker.profile.show')}>
-                                            View Profile
-                                        </Dropdown.Link>
+                                        <Dropdown.Link href={route('jobseeker.profile.show')}>View Profile</Dropdown.Link>
                                     )}
-                                    
-                                    <Dropdown.Link
-                                        href={route('logout')}
-                                        method="post"
-                                        as="button"
-                                    >
+
+                                    <Dropdown.Link href={route('logout')} method="post" as="button">
                                         Log Out
                                     </Dropdown.Link>
                                 </Dropdown.Content>
@@ -156,36 +141,19 @@ export default function Navbar() {
                     {/* Mobile Menu Button */}
                     <div className="-me-2 flex items-center sm:hidden">
                         <button
-                            onClick={() =>
-                                setShowingNavigationDropdown(
-                                    (previousState) => !previousState,
-                                )
-                            }
+                            onClick={() => setShowingNavigationDropdown((previousState) => !previousState)}
                             className="inline-flex items-center justify-center rounded-md p-2 text-gray-400 transition duration-150 ease-in-out hover:bg-gray-100 hover:text-gray-500 focus:bg-gray-100 focus:text-gray-500 focus:outline-none"
                         >
-                            <svg
-                                className="h-6 w-6"
-                                stroke="currentColor"
-                                fill="none"
-                                viewBox="0 0 24 24"
-                            >
+                            <svg className="h-6 w-6" stroke="currentColor" fill="none" viewBox="0 0 24 24">
                                 <path
-                                    className={
-                                        !showingNavigationDropdown
-                                            ? 'inline-flex'
-                                            : 'hidden'
-                                    }
+                                    className={!showingNavigationDropdown ? 'inline-flex' : 'hidden'}
                                     strokeLinecap="round"
                                     strokeLinejoin="round"
                                     strokeWidth="2"
                                     d="M4 6h16M4 12h16M4 18h16"
                                 />
                                 <path
-                                    className={
-                                        showingNavigationDropdown
-                                            ? 'inline-flex'
-                                            : 'hidden'
-                                    }
+                                    className={showingNavigationDropdown ? 'inline-flex' : 'hidden'}
                                     strokeLinecap="round"
                                     strokeLinejoin="round"
                                     strokeWidth="2"
@@ -198,65 +166,38 @@ export default function Navbar() {
             </div>
 
             {/* Mobile Menu */}
-            <div
-                className={
-                    (showingNavigationDropdown ? 'block' : 'hidden') +
-                    ' sm:hidden'
-                }
-            >
+            <div className={(showingNavigationDropdown ? 'block' : 'hidden') + ' sm:hidden'}>
                 <div className="space-y-1 pb-3 pt-2">
                     {menuItems.map((item) => (
-                        <ResponsiveNavLink
-                            key={item.route}
-                            href={route(item.route)}
-                            active={route().current(item.route)}
-                        >
+                        <ResponsiveNavLink key={item.route} href={route(item.route)} active={route().current(item.route)}>
                             {item.name}
                         </ResponsiveNavLink>
                     ))}
                 </div>
 
                 <div className="border-t border-gray-200 pb-1 pt-4">
-                    <div className="px-4 flex items-center">
+                    <div className="flex items-center px-4">
                         {photoPath ? (
-                            <img
-                                src={photoPath}
-                                alt={user.name}
-                                className="h-10 w-10 rounded-full object-cover mr-3"
-                            />
+                            <img src={photoPath} alt={user.name} className="mr-3 h-10 w-10 rounded-full object-cover" />
                         ) : (
-                            <div className="h-10 w-10 rounded-full bg-indigo-600 flex items-center justify-center text-white font-semibold mr-3">
+                            <div className="mr-3 flex h-10 w-10 items-center justify-center rounded-full bg-indigo-600 font-semibold text-white">
                                 {user.name.charAt(0).toUpperCase()}
                             </div>
                         )}
                         <div>
-                            <div className="text-base font-medium text-gray-800">
-                                {user.name}
-                            </div>
-                            <div className="text-sm font-medium text-gray-500">
-                                {user.email}
-                            </div>
+                            <div className="text-base font-medium text-gray-800">{user.name}</div>
+                            <div className="text-sm font-medium text-gray-500">{user.email}</div>
                         </div>
                     </div>
 
                     <div className="mt-3 space-y-1">
-                        {role.toLowerCase() === 'company' && (
-                            <ResponsiveNavLink href={route('company.profile.show')}>
-                                View Profile
-                            </ResponsiveNavLink>
-                        )}
-                        
+                        {role.toLowerCase() === 'company' && <ResponsiveNavLink href={route('company.profile.show')}>View Profile</ResponsiveNavLink>}
+
                         {role.toLowerCase() === 'jobseeker' && (
-                            <ResponsiveNavLink href={route('jobseeker.profile.show')}>
-                                View Profile
-                            </ResponsiveNavLink>
+                            <ResponsiveNavLink href={route('jobseeker.profile.show')}>View Profile</ResponsiveNavLink>
                         )}
-                        
-                        <ResponsiveNavLink
-                            method="post"
-                            href={route('logout')}
-                            as="button"
-                        >
+
+                        <ResponsiveNavLink method="post" href={route('logout')} as="button">
                             Log Out
                         </ResponsiveNavLink>
                     </div>

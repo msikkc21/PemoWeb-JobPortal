@@ -65,6 +65,28 @@ Route::middleware(['auth', 'check.permission:company', 'ensure.profile'])->group
 
     Route::get('/company/applicants/{id}', [ApplicantController::class, 'show'])->name('company.applicants.show');
 
+    // Applicant status update
+    Route::post('/company/applicants/{id}/status', [\App\Http\Controllers\Company\ApplicantController::class, 'updateStatus'])
+        ->name('company.applicants.status');
+
+    // Schedule interview form and store
+    Route::get('/company/applicants/{id}/interviews/create', [\App\Http\Controllers\Company\InterviewController::class, 'create'])
+        ->name('company.applicants.interviews.create');
+
+    Route::post('/company/interviews', [\App\Http\Controllers\Company\InterviewController::class, 'store'])
+        ->name('company.interviews.store');
+
+    // Company interview listing
+    Route::get('/company/interviews', [\App\Http\Controllers\Company\InterviewController::class, 'index'])
+        ->name('company.interviews.index');
+
+    // Start and complete interview
+    Route::get('/company/interviews/{id}/start', [\App\Http\Controllers\Company\InterviewController::class, 'start'])
+        ->name('company.interviews.start');
+
+    Route::post('/company/interviews/{id}/complete', [\App\Http\Controllers\Company\InterviewController::class, 'complete'])
+        ->name('company.interviews.complete');
+
     // Tambahkan route company lainnya di sini
     // Semua route di group ini akan memerlukan profil lengkap
 });

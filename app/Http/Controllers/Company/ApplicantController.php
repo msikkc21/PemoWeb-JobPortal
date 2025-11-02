@@ -159,4 +159,27 @@ class ApplicantController extends Controller
     {
         //
     }
+
+    /**
+     * Update application status (quick action by company).
+     */
+    public function updateStatus(Request $request, string $id)
+    {
+        $company = Auth::user()->company;
+
+        $application = Application::with('job')->findOrFail($id);
+
+        if ($company && isset($application->job->company_id) && $application->job->company_id !== $company->id) {
+            abort(403, 'Anda tidak berwenang melakukan tindakan ini.');
+        }
+
+        $validated = $request->validate([
+            'status' => ['required', 'string', 'in:reviewed,shortlisted,interviewed,accepted,rejected,in_process']
+        ]);
+
+        $application->status = $validated['status'];
+        $application->save();
+
+        return redirect()->back()->with('success', 'Status lamaran diperbarui.');
+    }
 }

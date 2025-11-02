@@ -53,12 +53,12 @@ export default function ApplicantsList({ applications = [], totalApplications, f
                                             />
                                         </svg>
                                     </div>
-                                    <div>
-                                        <dl>
-                                            <dt className="text-sm font-medium text-gray-500">Total Pelamar</dt>
-                                            <dd className="text-3xl font-semibold text-gray-900">{totalApplications}</dd>
-                                        </dl>
-                                    </div>
+                                    {totalApplications !== undefined && (
+                                        <div>
+                                            <p className="text-2xl font-bold text-gray-900">{totalApplications}</p>
+                                            <p className="text-sm font-medium text-gray-500">Total Pelamar</p>
+                                        </div>
+                                    )}
                                 </div>
                             </div>
                         </div>
@@ -138,13 +138,62 @@ export default function ApplicantsList({ applications = [], totalApplications, f
                                                             Lihat
                                                         </Link>
 
-                                                        <Link
-                                                            href={`/`}
-                                                            disabled={app.status !== 'submitted'}
-                                                            className={`rounded px-3 py-1 text-sm text-white ${app.status === 'submitted' ? 'bg-indigo-600 hover:bg-indigo-700' : 'cursor-not-allowed bg-gray-300'}`}
+                                                        {app.status === 'shortlisted' || app.status === 'reviewed' || app.status === 'submitted' ? (
+                                                            <Link
+                                                                href={
+                                                                    typeof route === 'function'
+                                                                        ? route('company.applicants.interviews.create', app.id)
+                                                                        : `/company/applicants/${app.id}/interviews/create`
+                                                                }
+                                                                className={`rounded bg-indigo-600 px-3 py-1 text-sm text-white hover:bg-indigo-700`}
+                                                            >
+                                                                Jadwalkan
+                                                            </Link>
+                                                        ) : (
+                                                            <span className="cursor-not-allowed rounded bg-gray-300 px-3 py-1 text-sm text-white">
+                                                                Jadwalkan
+                                                            </span>
+                                                        )}
+
+                                                        <select
+                                                            defaultValue={app.status}
+                                                            onChange={(e) => {
+                                                                const choice = e.target.value;
+                                                                const valid = [
+                                                                    'submitted',
+                                                                    'reviewed',
+                                                                    'shortlisted',
+                                                                    'interviewed',
+                                                                    'accepted',
+                                                                    'rejected',
+                                                                    'in_process',
+                                                                ];
+                                                                if (!valid.includes(choice)) {
+                                                                    alert('Status tidak valid');
+                                                                    e.target.value = app.status;
+                                                                    return;
+                                                                }
+                                                                if (!confirm('Ubah status lamaran menjadi "' + choice + '"?')) {
+                                                                    e.target.value = app.status;
+                                                                    return;
+                                                                }
+                                                                const url =
+                                                                    typeof route === 'function'
+                                                                        ? route('company.applicants.status', app.id)
+                                                                        : `/company/applicants/${app.id}/status`;
+                                                                router.post(url, { status: choice }, { onFinish: () => router.reload() });
+                                                            }}
+                                                            className="rounded border text-sm"
                                                         >
-                                                            Review
-                                                        </Link>
+                                                            <option value="submitted">Submitted</option>
+                                                            <option value="reviewed">Reviewed</option>
+                                                            <option value="shortlisted">Shortlisted</option>
+                                                            <option value="interviewed">Interviewed</option>
+                                                            <option value="accepted">Accepted</option>
+                                                            <option value="offered">Offered</option>
+                                                            <option value="rejected">Rejected</option>
+                                                            <option value="in_process">In Process</option>
+                                                        </select>
                                                     </div>
                                                 </td>
                                             </tr>
