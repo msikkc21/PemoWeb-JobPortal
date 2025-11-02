@@ -3,6 +3,8 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\JobSeeker\ProfileController;
 use App\Http\Controllers\JobSeeker\DashboardController;
+use App\Http\Controllers\JobSeeker\JobController;
+
 
 /*
 ================
@@ -42,6 +44,8 @@ Route::middleware(['auth','check.permission:jobseeker'])->prefix('jobseeker')->g
     Route::resource('profile', ProfileController::class)->only(['show','edit','update']);
     Route::resource('resumes', ResumeController::class);
 });
+
+
 
 
     // Tambahkan route jobseeker lainnya di sini
