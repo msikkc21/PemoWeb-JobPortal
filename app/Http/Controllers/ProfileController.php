@@ -7,6 +7,7 @@ use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Redirect;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -29,15 +30,41 @@ class ProfileController extends Controller
      */
     public function update(ProfileUpdateRequest $request): RedirectResponse
     {
-        $request->user()->fill($request->validated());
+        $user = $request->user();
+        
+        DB::transaction(function () use ($user, $request) {
+            $user->fill($request->validated());
 
-        if ($request->user()->isDirty('email')) {
-            $request->user()->email_verified_at = null;
-        }
+            if ($user->isDirty('email')) {
+                $user->email_verified_at = null;
+            }
 
-        $request->user()->save();
+            // Check if name changed
+            $nameChanged = $user->isDirty('name');
+
+            $user->save();
+
+            // Sync name to company.company_name if user is company and name changed
+            if ($nameChanged) {
+                $this->syncCompanyNameFromUser($user);
+            }
+        });
 
         return Redirect::route('profile.edit');
+    }
+
+    /**
+     * Helper: Sync company.company_name from user.name
+     * Ensures companies.company_name always matches users.name
+     */
+    private function syncCompanyNameFromUser($user): void
+    {
+        // Only sync if user is company role and has company profile
+        if ($user && $user->role->name === 'company' && $user->company) {
+            $user->company->update([
+                'company_name' => $user->name
+            ]);
+        }
     }
 
     /**

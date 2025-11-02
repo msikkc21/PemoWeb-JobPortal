@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Company;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 
@@ -55,7 +56,15 @@ class ProfileController extends Controller
             $validated['photo_path'] = $path;
         }
 
-        $company->update($validated);
+        DB::transaction(function () use ($company, $validated) {
+            // Update company profile
+            $company->update($validated);
+
+            // Sync company_name to user.name if changed
+            if (isset($validated['company_name']) && $company->wasChanged('company_name')) {
+                $this->syncUserNameFromCompany($company);
+            }
+        });
 
         return redirect()->route('company.dashboard')->with('success', 'Profil berhasil dilengkapi!');
     }
@@ -121,8 +130,30 @@ class ProfileController extends Controller
             $validated['photo_path'] = $path;
         }
 
-        $company->update($validated);
+        DB::transaction(function () use ($company, $validated) {
+            // Update company profile
+            $company->update($validated);
+
+            // Sync company_name to user.name if changed
+            if (isset($validated['company_name']) && $company->wasChanged('company_name')) {
+                $this->syncUserNameFromCompany($company);
+            }
+        });
 
         return redirect()->route('company.profile.show')->with('success', 'Profil berhasil diperbarui!');
     }
+
+    /**
+     * Helper: Sync user.name from company.company_name
+     * Ensures users.name always matches companies.company_name
+     */
+    private function syncUserNameFromCompany($company): void
+    {
+        if ($company && $company->user) {
+            $company->user->update([
+                'name' => $company->company_name
+            ]);
+        }
+    }
 }
+

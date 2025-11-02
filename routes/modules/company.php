@@ -58,6 +58,39 @@ Route::middleware(['auth', 'check.permission:company', 'ensure.profile'])->group
     
     Route::get('/company/subscription/payment/check/{external_id}', [SubscriptionController::class, 'checkPayment'])
         ->name('company.subscription.payment.check');
+    
+    // Jobs routes - Read-only (no subscription required)
+    Route::get('/company/jobs', [\App\Http\Controllers\Company\JobController::class, 'index'])
+        ->name('company.jobs.index');
+    
+    Route::get('/company/jobs/{job}', [\App\Http\Controllers\Company\JobController::class, 'show'])
+        ->name('company.jobs.show');
+    
+    // Jobs CRUD routes - Require active subscription
+    Route::middleware('ensure.active.subscription')->group(function () {
+        Route::get('/company/jobs/create', [\App\Http\Controllers\Company\JobController::class, 'create'])
+            ->name('company.jobs.create');
+        
+        Route::post('/company/jobs', [\App\Http\Controllers\Company\JobController::class, 'store'])
+            ->name('company.jobs.store');
+        
+        Route::get('/company/jobs/{job}/edit', [\App\Http\Controllers\Company\JobController::class, 'edit'])
+            ->name('company.jobs.edit');
+        
+        Route::put('/company/jobs/{job}', [\App\Http\Controllers\Company\JobController::class, 'update'])
+            ->name('company.jobs.update');
+        
+        Route::patch('/company/jobs/{job}', [\App\Http\Controllers\Company\JobController::class, 'update']);
+        
+        Route::delete('/company/jobs/{job}', [\App\Http\Controllers\Company\JobController::class, 'destroy'])
+            ->name('company.jobs.destroy');
+        
+        Route::post('/company/jobs/{job}/submit', [\App\Http\Controllers\Company\JobController::class, 'submitForReview'])
+            ->name('company.jobs.submit');
+        
+        Route::post('/company/jobs/{job}/close', [\App\Http\Controllers\Company\JobController::class, 'close'])
+            ->name('company.jobs.close');
+    });
 
     // Tambahkan route company lainnya di sini
     // Semua route di group ini akan memerlukan profil lengkap

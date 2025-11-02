@@ -25,7 +25,8 @@ export default function Navbar() {
             case 'company':
                 return [
                     { name: 'Dashboard', route: 'company.dashboard' },
-                    { name: 'Jobs', route: 'admin.dashboard' },
+                    // resource routes use names like 'company.jobs.index' for the list page
+                    { name: 'Jobs', route: 'company.jobs.index' },
                     { name: 'Applicants', route: 'admin.dashboard' },
                     { name: 'Subscription', route: 'company.subscription.index' },
                     { name: 'Profile', route: 'company.profile.show' },
