@@ -35,6 +35,15 @@ Route::middleware(['auth', 'check.permission:jobseeker', 'ensure.profile'])->gro
     Route::post('/jobseeker/profile/update', [ProfileController::class, 'update'])
         ->name('jobseeker.profile.update');
 
+//added this 10.51 02 Okt 2025        
+Route::middleware(['auth','check.permission:jobseeker'])->prefix('jobseeker')->group(function () {
+    Route::resource('jobs', JobController::class)->only(['index','show']);
+    Route::resource('applications', ApplicationController::class);
+    Route::resource('profile', ProfileController::class)->only(['show','edit','update']);
+    Route::resource('resumes', ResumeController::class);
+});
+
+
     // Tambahkan route jobseeker lainnya di sini
     // Semua route di group ini akan memerlukan profil lengkap
 });
