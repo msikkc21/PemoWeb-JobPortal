@@ -1,8 +1,11 @@
 <?php
 
+use App\Http\Controllers\JobSeeker\ApplicationController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\JobSeeker\ProfileController;
 use App\Http\Controllers\JobSeeker\DashboardController;
+use App\Http\Controllers\JobSeeker\JobController;
+use App\Http\Controllers\JobSeeker\ResumeController;
 
 /*
 ================
@@ -34,6 +37,37 @@ Route::middleware(['auth', 'check.permission:jobseeker', 'ensure.profile'])->gro
     
     Route::post('/jobseeker/profile/update', [ProfileController::class, 'update'])
         ->name('jobseeker.profile.update');
+
+    // Jobs routes
+    Route::get('/jobseeker/jobs', [JobController::class, 'index'])
+        ->name('jobseeker.jobs.index');
+    
+    Route::get('/jobseeker/jobs/{job}', [JobController::class, 'show'])
+        ->name('jobseeker.jobs.show');
+
+    // Applications routes
+    Route::resource('jobseeker/applications', ApplicationController::class)
+        ->names([
+            'index' => 'jobseeker.applications.index',
+            'create' => 'jobseeker.applications.create',
+            'store' => 'jobseeker.applications.store',
+            'show' => 'jobseeker.applications.show',
+            'edit' => 'jobseeker.applications.edit',
+            'update' => 'jobseeker.applications.update',
+            'destroy' => 'jobseeker.applications.destroy',
+        ]);
+
+    // Resumes routes
+    Route::resource('jobseeker/resumes', ResumeController::class)
+        ->names([
+            'index' => 'jobseeker.resumes.index',
+            'create' => 'jobseeker.resumes.create',
+            'store' => 'jobseeker.resumes.store',
+            'show' => 'jobseeker.resumes.show',
+            'edit' => 'jobseeker.resumes.edit',
+            'update' => 'jobseeker.resumes.update',
+            'destroy' => 'jobseeker.resumes.destroy',
+        ]);
 
     // Tambahkan route jobseeker lainnya di sini
     // Semua route di group ini akan memerlukan profil lengkap
