@@ -40,6 +40,12 @@ class Application extends Model
         return $this->belongsTo(JobSeeker::class, 'job_seeker_id');
     }
 
+    /** Alias untuk jobSeeker (snake_case support) */
+    public function job_seeker(): BelongsTo
+    {
+        return $this->jobSeeker();
+    }
+
     /** Lamaran menggunakan resume tertentu */
     public function resume(): BelongsTo
     {

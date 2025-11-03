@@ -19,6 +19,14 @@ class DashboardController extends Controller
 
         // determine company id from user relation or direct column
         $companyId = $user->company_id ?? ($user->company->id ?? null);
+        // Get job statistics
+        $totalJobs = Job::where('company_id', $companyId)->count();
+        $activeJobs = Job::where('company_id', $companyId)
+            ->where('status', 'approved')
+            ->count();
+        $closedJobs = Job::where('company_id', $companyId)
+            ->where('status', 'closed')
+            ->count();
 
         if (! $companyId) {
             // if user has no company, render dashboard with empty/zero data
@@ -81,7 +89,7 @@ class DashboardController extends Controller
             $recentApplications = $appModel::whereHas('job', function ($q) use ($companyId) {
                     $q->where('company_id', $companyId);
                 })
-                ->with(['job', 'job_seeker.user'])
+                ->with(['job', 'jobSeeker.user'])
                 ->orderByDesc('created_at')
                 ->limit(6)
                 ->get();
@@ -95,6 +103,12 @@ class DashboardController extends Controller
             'closedJobs' => $closedJobsCount,
             'totalApplications' => $totalApplications,
         ];
+        // Get active jobs list
+        $activeJobsList = Job::where('company_id', $companyId)
+            ->where('status', 'approved')
+            ->orderBy('created_at', 'desc')
+            ->take(5)
+            ->get();
 
         return Inertia::render('Company/DashboardCompany', [
             // send auth in the same shape the frontend expects

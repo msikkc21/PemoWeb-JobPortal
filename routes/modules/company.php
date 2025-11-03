@@ -2,8 +2,10 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Company\ProfileController;
+use App\Http\Controllers\Company\ApplicantController;
 use App\Http\Controllers\Company\DashboardController;
 use App\Http\Controllers\Company\SubscriptionController;
+use App\Http\Controllers\JobSeeker\ApplicationController;
 
 /*
 ================
@@ -92,6 +94,10 @@ Route::middleware(['auth', 'check.permission:company', 'ensure.profile'])->group
         Route::post('/company/jobs/{job}/close', [\App\Http\Controllers\Company\JobController::class, 'close'])
             ->name('company.jobs.close');
     });
+    
+    Route::get('/company/applicants', [ApplicantController::class, 'index'])->name('company.applicants.index');
+
+    Route::get('/company/applicants/{id}', [ApplicantController::class, 'show'])->name('company.applicants.show');
 
     // Tambahkan route company lainnya di sini
     // Semua route di group ini akan memerlukan profil lengkap
