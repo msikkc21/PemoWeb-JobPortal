@@ -1,26 +1,45 @@
 <?php
 
+// --- IMPORTS YANG DIBUTUHKAN ---
+use App\Models\Company; 
+use App\Models\JobPost;
+use App\Models\Application; // Tambahkan jika menggunakan model Application di controller
+
+use App\Http\Controllers\Admin\DashboardController;
+use App\Http\Controllers\Admin\SkillController;
+use App\Http\Controllers\Admin\JobController;
+
 use App\Http\Controllers\ProfileController;
-use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
-
-// Route::get('/', function () {
-//     return Inertia::render('Welcome', [
-//         'canLogin' => Route::has('login'),
-//         'canRegister' => Route::has('register'),
-//         'laravelVersion' => Application::VERSION,
-//         'phpVersion' => PHP_VERSION,
-//     ]);
-// });
+// -----------------------------
 
 Route::get('/', function () {
     return Inertia::render('Auth/Login');
 })->middleware('guest');
 
+// Rute dashboard untuk pengguna non-admin (Job Seeker, Company, dll.)
 Route::get('/dashboard', function () {
-    return Inertia::render('Dashboard');
+    return Inertia::render('Dashboard'); 
 })->middleware(['auth', 'verified'])->name('dashboard');
+
+
+// --- GRUP ROUTE KHUSUS UNTUK ADMIN (DEV A) ---
+Route::middleware(['auth', 'verified'])->prefix('admin')->name('admin.')->group(function () {
+    
+    // 1. Dashboard Admin
+    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+    
+    // 2. Skills CRUD
+    Route::resource('skills', SkillController::class)->except(['create', 'show']);
+
+    // 3. Job Review & History
+    Route::get('/jobs/review', [JobController::class, 'reviewIndex'])->name('jobs.review');
+    Route::post('/jobs/{jobPost}/approve', [JobController::class, 'approve'])->name('jobs.approve');
+    Route::post('/jobs/{jobPost}/reject', [JobController::class, 'reject'])->name('jobs.reject');
+    Route::get('/jobs/history', [JobController::class, 'historyIndex'])->name('jobs.history');
+});
+// ------------------------------------------------------------------------
 
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');

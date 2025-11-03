@@ -54,6 +54,12 @@ class RegisteredUserController extends Controller
 
         Auth::login($user);
 
+        // Cek jika pengguna yang baru mendaftar adalah Admin
+        if ($user->role && $user->role->name === 'Admin') {
+            return redirect()->route('admin.dashboard');
+        }
+
+        // Untuk role lain, arahkan ke dashboard default
         return redirect(route('dashboard', absolute: false));
     }
 }
