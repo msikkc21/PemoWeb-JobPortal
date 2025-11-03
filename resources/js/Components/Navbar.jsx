@@ -34,8 +34,8 @@ export default function Navbar() {
             case 'jobseeker':
                 return [
                     { name: 'Dashboard', route: 'jobseeker.dashboard' },
-                    { name: 'Browse Jobs', route: 'admin.dashboard' },
-                    { name: 'Applications', route: 'admin.dashboard' },
+                    { name: 'Browse Jobs', route: 'jobseeker.jobs.index' },
+                    { name: 'My Applications', route: 'jobseeker.applications.index' },
                     { name: 'Profile', route: 'jobseeker.profile.show' },
                 ];
             default:
