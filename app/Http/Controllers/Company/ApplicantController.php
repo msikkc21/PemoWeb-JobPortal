@@ -7,6 +7,7 @@ use App\Models\Application;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Auth;
+use App\Models\Job;
 
 class ApplicantController extends Controller
 {
@@ -181,5 +182,46 @@ class ApplicantController extends Controller
         $application->save();
 
         return redirect()->back()->with('success', 'Status lamaran diperbarui.');
+    }
+
+    /**
+     * List all applicants for a specific job owned by the authenticated company.
+     */
+    public function jobApplicants(Job $job)
+    {
+        $company = Auth::user()->company;
+
+        // Authorization: ensure the job belongs to this company
+        if (!$company || $job->company_id !== $company->id) {
+            abort(403, 'Anda tidak berwenang melihat pelamar untuk lowongan ini.');
+        }
+
+        // Pull applications for this job with job seeker basic info
+        $applications = Application::with(['jobSeeker'])
+            ->where('job_id', $job->id)
+            ->orderBy('application_date', 'desc')
+            ->get()
+            ->map(function ($app) {
+                return [
+                    'id' => $app->id,
+                    'status' => $app->status,
+                    'application_date' => $app->application_date,
+                    'job_seeker' => $app->jobSeeker ? [
+                        'id' => $app->jobSeeker->id,
+                        'name' => $app->jobSeeker->name ?? optional($app->jobSeeker->user)->name,
+                        'email' => optional($app->jobSeeker->user)->email,
+                    ] : null,
+                ];
+            });
+
+        return Inertia::render('Company/Applicants/ByJob', [
+            'job' => [
+                'id' => $job->id,
+                'title' => $job->title,
+                'status' => $job->status,
+            ],
+            'applications' => $applications,
+            'totalApplications' => $applications->count(),
+        ]);
     }
 }

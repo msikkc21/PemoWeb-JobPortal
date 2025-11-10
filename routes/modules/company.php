@@ -71,6 +71,10 @@ Route::middleware(['auth', 'check.permission:company', 'ensure.profile'])->group
     Route::get('/company/jobs/{job}', [\App\Http\Controllers\Company\JobController::class, 'show'])
         ->name('company.jobs.show');
 
+    // List applicants for a specific job (per-job applicants view)
+    Route::get('/company/jobs/{job}/applicants', [ApplicantController::class, 'jobApplicants'])
+        ->name('company.jobs.applicants');
+
     // Jobs CRUD routes - Require active subscription
     Route::middleware('ensure.active.subscription')->group(function () {
 
