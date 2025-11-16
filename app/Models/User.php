@@ -13,6 +13,16 @@ class User extends Authenticatable
     use HasFactory, Notifiable;
 
     /**
+     * PENTING: Table name di database adalah 'pengguna' (bukan 'users')
+     */
+    protected $table = 'pengguna';
+
+    /**
+     * Primary key untuk user
+     */
+    protected $primaryKey = 'id_pengguna';
+
+    /**
      * The attributes that are mass assignable.
      *
      * @var list<string>
@@ -21,6 +31,8 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'role_id',
+        'email_verified_at',
     ];
 
     /**
@@ -44,5 +56,34 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
         ];
+    }
+
+    /**
+     * RELATIONSHIP: User has a Role
+     * KENAPA: Untuk check permission user berdasarkan rolenya
+     */
+    public function role()
+    {
+        return $this->belongsTo(Role::class, 'role_id', 'id');
+    }
+
+    /**
+     * CHECK PERMISSION
+     * FUNGSI: Cek apakah user punya permission tertentu
+     * 
+     * CARA PAKAI:
+     * - $user->hasPermission('admin') → return true/false
+     * 
+     * ALASAN PENTING:
+     * - Middleware check.permission:admin memanggil method ini
+     * - Jika method tidak ada, middleware akan error
+     */
+    public function hasPermission(string $permission): bool
+    {
+        // Jika user punya role, check apakah role punya permission ini
+        if ($this->role) {
+            return $this->role->hasPermission($permission);
+        }
+        return false;
     }
 }

@@ -1,35 +1,65 @@
 import ApplicationLogo from '@/Components/ApplicationLogo';
 import Dropdown from '@/Components/Dropdown';
 import NavLink from '@/Components/NavLink';
-import ResponsiveNavLink from '@/Components/ResponsiveNavLink';
 import { Link, usePage } from '@inertiajs/react';
 import { useState } from 'react';
 
-export default function AuthenticatedLayout({ header, children }) {
+export default function AdminLayout({ children }) {
     const user = usePage().props.auth.user;
+    const [showingNavigationDropdown, setShowingNavigationDropdown] = useState(false);
 
-    console.log(user);
-
-    const [showingNavigationDropdown, setShowingNavigationDropdown] =
-        useState(false);
+    const navItems = [
+        {
+            label: 'Dashboard',
+            href: route('admin.dashboard'),
+            active: route().current('admin.dashboard'),
+        },
+        {
+            label: 'Job Review',
+            href: route('admin.jobs.review'),
+            active: route().current('admin.jobs.review'),
+        },
+        {
+            label: 'Approval History',
+            href: route('admin.jobs.history'),
+            active: route().current('admin.jobs.history'),
+        },
+        {
+            label: 'Edit Skills',
+            href: route('admin.skills.index'),
+            active: route().current('admin.skills.index'),
+        },
+    ];
 
     return (
         <div className="min-h-screen bg-gray-100">
+            {/* Top Navbar */}
             <nav className="border-b border-gray-100 bg-white">
                 <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
                     <div className="flex h-16 justify-between">
+                        {/* Logo & Nav Links */}
                         <div className="flex">
                             <div className="flex shrink-0 items-center">
                                 <Link href="/">
-                                    <ApplicationLogo className="block h-9 w-auto fill-current text-gray-800" />
+                                    <ApplicationLogo className="block h-8 w-auto fill-current text-gray-800" />
                                 </Link>
                             </div>
 
-                            <div className="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
-                                {/* Dashboard nav link removed */}
+                            {/* Horizontal Menu */}
+                            <div className="hidden space-x-1 sm:-my-px sm:ms-10 sm:flex">
+                                {navItems.map((item) => (
+                                    <NavLink
+                                        key={item.href}
+                                        href={item.href}
+                                        active={item.active}
+                                    >
+                                        {item.label}
+                                    </NavLink>
+                                ))}
                             </div>
                         </div>
 
+                        {/* User Menu */}
                         <div className="hidden sm:ms-6 sm:flex sm:items-center">
                             <div className="relative ms-3">
                                 <Dropdown>
@@ -58,16 +88,10 @@ export default function AuthenticatedLayout({ header, children }) {
                                     </Dropdown.Trigger>
 
                                     <Dropdown.Content>
-                                        <Dropdown.Link
-                                            href={route('profile.edit')}
-                                        >
+                                        <Dropdown.Link href={route('profile.edit')}>
                                             Profile
                                         </Dropdown.Link>
-                                        <Dropdown.Link
-                                            href={route('logout')}
-                                            method="post"
-                                            as="button"
-                                        >
+                                        <Dropdown.Link href={route('logout')} method="post" as="button">
                                             Log Out
                                         </Dropdown.Link>
                                     </Dropdown.Content>
@@ -75,6 +99,7 @@ export default function AuthenticatedLayout({ header, children }) {
                             </div>
                         </div>
 
+                        {/* Mobile Menu Button */}
                         <div className="-me-2 flex items-center sm:hidden">
                             <button
                                 onClick={() =>
@@ -118,51 +143,32 @@ export default function AuthenticatedLayout({ header, children }) {
                     </div>
                 </div>
 
-                <div
-                    className={
-                        (showingNavigationDropdown ? 'block' : 'hidden') +
-                        ' sm:hidden'
-                    }
-                >
-                    <div className="space-y-1 pb-3 pt-2">
-                        {/* Dashboard responsive nav link removed */}
-                    </div>
-
-                    <div className="border-t border-gray-200 pb-1 pt-4">
-                        <div className="px-4">
-                            <div className="text-base font-medium text-gray-800">
-                                {user.name}
-                            </div>
-                            <div className="text-sm font-medium text-gray-500">
-                                {user.email}
-                            </div>
-                        </div>
-
-                        <div className="mt-3 space-y-1">
-                            <ResponsiveNavLink href={route('profile.edit')}>
-                                Profile
-                            </ResponsiveNavLink>
-                            <ResponsiveNavLink
-                                method="post"
-                                href={route('logout')}
-                                as="button"
+                {/* Mobile Menu */}
+                {showingNavigationDropdown && (
+                    <div className="space-y-1 border-t border-gray-200 pb-3 pt-2 sm:hidden">
+                        {navItems.map((item) => (
+                            <Link
+                                key={item.href}
+                                href={item.href}
+                                className={`block px-3 py-2 text-base font-medium ${
+                                    item.active
+                                        ? 'border-l-4 border-indigo-400 bg-indigo-50 text-indigo-700'
+                                        : 'border-l-4 border-transparent text-gray-600 hover:border-gray-300 hover:bg-gray-50'
+                                }`}
                             >
-                                Log Out
-                            </ResponsiveNavLink>
-                        </div>
+                                {item.label}
+                            </Link>
+                        ))}
                     </div>
-                </div>
+                )}
             </nav>
 
-            {header && (
-                <header className="bg-white shadow">
-                    <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
-                        {header}
-                    </div>
-                </header>
-            )}
-
-            <main>{children}</main>
+            {/* Page Content */}
+            <main className="bg-gray-50">
+                <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
+                    {children}
+                </div>
+            </main>
         </div>
     );
 }

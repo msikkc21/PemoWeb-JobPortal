@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
-import { Inertia } from '@inertiajs/inertia';
-import { useForm, Head, Link } from '@inertiajs/react';
+import { useForm, Head, Link, router } from '@inertiajs/react';
 import AdminLayout from '@/Layouts/AdminLayout'; 
 import Pagination from '@/Components/Pagination'; 
 import TextInput from '@/Components/TextInput'; 
@@ -33,12 +32,12 @@ export default function JobReviewIndex({ jobs, filters }) {
     
     // 1. Aksi Approve
     const handleApprove = (jobPost) => {
-        if (!confirm(`Yakin ingin MENG-APPROVE lowongan: ${jobPost.title}?`)) {
+        if (!confirm(`Yakin ingin MENG-APPROVE lowongan: ${jobPost.judul}?`)) {
             return;
         }
 
-        // Inertia.post ke endpoint Approve
-        Inertia.post(route('admin.jobs.approve', jobPost.id), {}, {
+        // Post ke endpoint Approve
+        router.post(route('admin.jobs.approve', jobPost.id_lowongan), {}, {
             onSuccess: () => {
                 alert('Lowongan berhasil di-approve dan sudah tayang!');
                 setShowingDetailModal(false); // Tutup modal detail jika sedang terbuka
@@ -69,13 +68,13 @@ export default function JobReviewIndex({ jobs, filters }) {
         
         if (!selectedJob) return;
 
-        // Inertia.post ke endpoint Reject
-        rejectPost(route('admin.jobs.reject', selectedJob.id), {
+        // Submit form reject ke endpoint
+        rejectPost(route('admin.jobs.reject', selectedJob.id_lowongan), {
             data: { rejection_reason: rejectForm.rejection_reason },
             onSuccess: () => {
                 setShowingRejectModal(false);
                 setSelectedJob(null);
-                alert(`Lowongan "${selectedJob.title}" berhasil di-reject.`);
+                alert(`Lowongan "${selectedJob.judul}" berhasil di-reject.`);
             },
             onError: (err) => {
                 // Errors dari backend akan ditampilkan via InputError
@@ -126,10 +125,10 @@ export default function JobReviewIndex({ jobs, filters }) {
                         <tbody className="bg-white divide-y divide-gray-200">
                             {jobs.data.length > 0 ? (
                                 jobs.data.map((job) => (
-                                    <tr key={job.id}>
-                                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{job.title}</td>
+                                    <tr key={job.id_lowongan}>
+                                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{job.judul}</td>
                                         {/* job.company diasumsikan sudah di-eager load di controller */}
-                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{job.company.name || '-'}</td>
+                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{job.company?.nama_perusahaan || '-'}</td>
                                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{new Date(job.created_at).toLocaleDateString()}</td>
                                         <td className="px-6 py-4 whitespace-nowrap text-center text-sm font-medium">
                                             {/* Tombol Detail (Membuka Modal Detail) */}
@@ -160,16 +159,21 @@ export default function JobReviewIndex({ jobs, filters }) {
             <Modal show={showingDetailModal} onClose={() => setShowingDetailModal(false)} maxWidth="xl">
                 {selectedJob && (
                     <div className="p-6">
-                        <h3 className="text-2xl font-bold mb-4">{selectedJob.title}</h3>
-                        <p className="text-gray-600 mb-4">Diposting oleh: **{selectedJob.company.name}**</p>
+                        <h3 className="text-2xl font-bold mb-4">{selectedJob.judul}</h3>
+                        <p className="text-gray-600 mb-4">Diposting oleh: **{selectedJob.company?.nama_perusahaan}**</p>
                         
                         <div className="space-y-4">
                             <div>
                                 <h4 className="font-semibold text-lg">Deskripsi Pekerjaan</h4>
-                                {/* Asumsi deskripsi pekerjaan ada di selectedJob.description */}
-                                <div className="mt-2 text-sm text-gray-700 whitespace-pre-line">{selectedJob.description}</div>
+                                {/* Asumsi deskripsi pekerjaan ada di selectedJob.deskripsi */}
+                                <div className="mt-2 text-sm text-gray-700 whitespace-pre-line">{selectedJob.deskripsi}</div>
                             </div>
                             
+                            <div>
+                                <h4 className="font-semibold text-lg">Persyaratan</h4>
+                                <div className="mt-2 text-sm text-gray-700 whitespace-pre-line">{selectedJob.persyaratan || '-'}</div>
+                            </div>
+
                             <div>
                                 <h4 className="font-semibold text-lg">Skills yang Dibutuhkan</h4>
                                 <div className="mt-2 flex flex-wrap gap-2">
@@ -177,7 +181,7 @@ export default function JobReviewIndex({ jobs, filters }) {
                                     {selectedJob.skills && selectedJob.skills.length > 0 ? (
                                         selectedJob.skills.map(skill => (
                                             <span key={skill.id} className="inline-flex items-center px-3 py-0.5 rounded-full text-sm font-medium bg-indigo-100 text-indigo-800">
-                                                {skill.name}
+                                                {skill.nama_keahlian}
                                             </span>
                                         ))
                                     ) : (
@@ -203,7 +207,7 @@ export default function JobReviewIndex({ jobs, filters }) {
             <Modal show={showingRejectModal} onClose={() => setShowingRejectModal(false)}>
                 <form onSubmit={submitReject} className="p-6">
                     <h3 className="text-lg font-medium text-gray-900">
-                        Tolak Lowongan: {selectedJob?.title}
+                        Tolak Lowongan: {selectedJob?.judul}
                     </h3>
                     <p className="mt-1 text-sm text-gray-600">
                         Anda **wajib** mengisi alasan penolakan (`rejection_reason`).

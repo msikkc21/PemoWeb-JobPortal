@@ -35,15 +35,11 @@ class AuthenticatedSessionController extends Controller
 
         $user = $request->user();
 
-        // Cek jika pengguna memiliki role 'Admin'
-        // Asumsi: Model Pengguna memiliki relasi 'role' dan nama role adalah 'Admin'
-        if ($user->role && $user->role->name === 'Admin') {
-            // Arahkan ke dashboard admin
-            return redirect()->route('admin.dashboard');
-        }
+        if (auth()->user()->role === 'admin') {
+        return redirect()->route('admin.dashboard');
+    }
 
-        // Untuk role lain, arahkan ke dashboard default
-        return redirect()->intended(route('dashboard'));
+        return redirect()->intended(route('dashboard', absolute: false));
     }
 
     /**

@@ -54,7 +54,7 @@ class RouteServiceProvider extends ServiceProvider
             |--------------------------------------------------------------------------
             */
             if (file_exists(base_path('routes/modules/admin.php'))) {
-                Route::middleware(['web'])
+                Route::middleware('web')
                     ->group(base_path('routes/modules/admin.php'));
             }
         });

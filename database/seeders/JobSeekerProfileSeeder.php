@@ -61,15 +61,6 @@ class JobSeekerProfileSeeder extends Seeder
                 'tanggal_lahir' => $faker->dateTimeBetween('-40 years', '-18 years')->format('Y-m-d'),
                 'telepon' => $faker->phoneNumber(),
                 'alamat' => $faker->address(),
-<<<<<<< HEAD
-                'pendidikan' => $faker->randomElement(['SMA', 'D3', 'S1', 'S2']),
-                'pengalaman' => $faker->paragraphs(rand(1, 3), true),
-                'deskripsi' => $faker->sentence(12),
-                'path_foto' => null,
-                'linkedin' => 'https://www.linkedin.com/in/' . $faker->userName(),
-                'github' => 'https://github.com/' . $faker->userName(),
-                'portfolio' => 'https://' . $faker->domainName() . '/' . $faker->slug(),
-=======
                 'pendidikan' => $education,
                 'pengalaman' => $experience,
                 'deskripsi' => $faker->paragraph(3),
@@ -79,7 +70,6 @@ class JobSeekerProfileSeeder extends Seeder
                 'portfolio' => $faker->optional(0.6)->url(),
                 'dibuat_pada' => now(),
                 'diperbarui_pada' => now()
->>>>>>> 30e7fb3476b20672f592f7fa60d6f4509fed3c9c
             ]);
         }
     }

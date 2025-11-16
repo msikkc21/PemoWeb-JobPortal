@@ -97,5 +97,56 @@ class PermissionSeeder extends Seeder
                 ]
             );
         }
+
+        // TAMBAHAN: Assign 'admin' permission ke Admin role
+        // KENAPA PENTING: Admin user harus punya permission 'admin' agar bisa akses /admin/dashboard
+        $this->assignAdminPermission();
+    }
+
+    /**
+     * Assign admin permission to Admin role
+     */
+    private function assignAdminPermission()
+    {
+        // Get Admin role
+        $adminRole = DB::table('roles')->where('name', 'Admin')->first();
+        if (!$adminRole) {
+            $this->command->warn('❌ Admin role not found. Run RoleSeeder first!');
+            return;
+        }
+
+        // Create 'admin' permission jika belum ada
+        // Create 'admin' permission jika belum ada (query builder tidak punya firstOrCreate)
+        $adminPerm = DB::table('permissions')->where('name', 'admin')->first();
+        if (! $adminPerm) {
+            DB::table('permissions')->insert([
+                'name' => 'admin',
+                'display_name' => 'Admin Access',
+                'group' => 'system',
+                'description' => 'Akses ke admin panel',
+                'is_active' => true,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+            $adminPerm = DB::table('permissions')->where('name', 'admin')->first();
+        }
+
+        // Check apakah Admin role sudah punya admin permission
+        $rolePermExists = DB::table('role_permission')
+            ->where('role_id', $adminRole->id)
+            ->where('permission_id', $adminPerm->id)
+            ->exists();
+
+        if (!$rolePermExists) {
+            DB::table('role_permission')->insert([
+                'role_id' => $adminRole->id,
+                'permission_id' => $adminPerm->id,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+            $this->command->info('✅ Permission "admin" assigned to role "Admin"');
+        } else {
+            $this->command->info('✅ Permission "admin" sudah ada di role "Admin"');
+        }
     }
 }

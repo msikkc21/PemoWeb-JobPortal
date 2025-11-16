@@ -1,5 +1,5 @@
 import React from 'react';
-import { useForm, Head } from '@inertiajs/react';
+import { useForm, Head, Link } from '@inertiajs/react';
 import AdminLayout from '@/Layouts/AdminLayout';
 import TextInput from '@/Components/TextInput';
 import PrimaryButton from '@/Components/PrimaryButton';
@@ -10,8 +10,9 @@ export default function SkillsEdit({ skill }) {
     
     // Inisialisasi useForm dengan data skill dari props
     const { data, setData, put, processing, errors } = useForm({
-        name: skill.name || '',
-        description: skill.description || '',
+        nama_keahlian: skill.nama_keahlian || '',
+        kategori: skill.kategori || '',
+        deskripsi: skill.deskripsi || '',
     });
 
     const handleSubmit = (e) => {
@@ -31,33 +32,44 @@ export default function SkillsEdit({ skill }) {
 
     return (
         <AdminLayout>
-            <Head title={`Edit Skill: ${skill.name}`} />
+            <Head title={`Edit Skill: ${skill.nama_keahlian}`} />
 
             <div className="max-w-4xl mx-auto py-6 sm:px-6 lg:px-8">
                 <div className="bg-white shadow overflow-hidden sm:rounded-lg p-6">
-                    <h2 className="text-2xl font-bold mb-6">Edit Skill: {skill.name}</h2>
+                    <h2 className="text-2xl font-bold mb-6">Edit Skill: {skill.nama_keahlian}</h2>
                     
                     <form onSubmit={handleSubmit}>
                         <div className="mb-4">
                             <label className="block font-medium text-sm text-gray-700">Nama Skill *</label>
                             <TextInput
                                 type="text"
-                                value={data.name}
-                                onChange={(e) => setData('name', e.target.value)}
+                                value={data.nama_keahlian}
+                                onChange={(e) => setData('nama_keahlian', e.target.value)}
                                 className="mt-1 block w-full"
                                 required
                             />
-                            <InputError message={errors.name} className="mt-2" />
+                            <InputError message={errors.nama_keahlian} className="mt-2" />
+                        </div>
+
+                        <div className="mb-4">
+                            <label className="block font-medium text-sm text-gray-700">Kategori</label>
+                            <TextInput
+                                type="text"
+                                value={data.kategori}
+                                onChange={(e) => setData('kategori', e.target.value)}
+                                className="mt-1 block w-full"
+                            />
+                            <InputError message={errors.kategori} className="mt-2" />
                         </div>
 
                         <div className="mb-6">
                             <label className="block font-medium text-sm text-gray-700">Deskripsi</label>
                             <textarea
-                                value={data.description}
-                                onChange={(e) => setData('description', e.target.value)}
+                                value={data.deskripsi}
+                                onChange={(e) => setData('deskripsi', e.target.value)}
                                 className="border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm mt-1 block w-full"
                             ></textarea>
-                            <InputError message={errors.description} className="mt-2" />
+                            <InputError message={errors.deskripsi} className="mt-2" />
                         </div>
 
                         <div className="flex justify-end">

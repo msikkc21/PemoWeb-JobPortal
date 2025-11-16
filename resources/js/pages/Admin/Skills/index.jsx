@@ -20,8 +20,9 @@ export default function SkillsIndex({ skills, filters }) {
 
     // Form untuk Create Skill (mengirim POST request)
     const { data: createForm, setData: setCreateForm, post: storeSkill, processing, errors, reset } = useForm({
-        name: '',
-        description: '',
+        nama_keahlian: '',
+        kategori: '',
+        deskripsi: '',
     });
 
     // Logika Pencarian
@@ -104,8 +105,8 @@ export default function SkillsIndex({ skills, filters }) {
                                 skills.data.map((skill) => (
                                     <tr key={skill.id}>
                                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{skill.id}</td>
-                                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{skill.name}</td>
-                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{skill.description || '-'}</td>
+                                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{skill.nama_keahlian}</td>
+                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{skill.deskripsi || '-'}</td>
                                         <td className="px-6 py-4 whitespace-nowrap text-center text-sm font-medium">
                                             {/* Link Inertia untuk Edit */}
                                             <Link href={route('admin.skills.edit', skill.id)}>
@@ -145,22 +146,33 @@ export default function SkillsIndex({ skills, filters }) {
                         <label className="block font-medium text-sm text-gray-700">Nama Skill *</label>
                         <TextInput
                             type="text"
-                            value={createForm.name}
-                            onChange={(e) => setCreateForm('name', e.target.value)}
+                            value={createForm.nama_keahlian}
+                            onChange={(e) => setCreateForm('nama_keahlian', e.target.value)}
                             className="mt-1 block w-full"
                             required
                         />
-                        <InputError message={errors.name} className="mt-2" />
+                        <InputError message={errors.nama_keahlian} className="mt-2" />
+                    </div>
+
+                    <div className="mt-4">
+                        <label className="block font-medium text-sm text-gray-700">Kategori</label>
+                        <TextInput
+                            type="text"
+                            value={createForm.kategori}
+                            onChange={(e) => setCreateForm('kategori', e.target.value)}
+                            className="mt-1 block w-full"
+                        />
+                        <InputError message={errors.kategori} className="mt-2" />
                     </div>
 
                     <div className="mt-4">
                         <label className="block font-medium text-sm text-gray-700">Deskripsi</label>
                         <textarea
-                            value={createForm.description}
-                            onChange={(e) => setCreateForm('description', e.target.value)}
+                            value={createForm.deskripsi}
+                            onChange={(e) => setCreateForm('deskripsi', e.target.value)}
                             className="border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm mt-1 block w-full"
                         ></textarea>
-                        <InputError message={errors.description} className="mt-2" />
+                        <InputError message={errors.deskripsi} className="mt-2" />
                     </div>
 
                     <div className="mt-6 flex justify-end">

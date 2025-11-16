@@ -15,6 +15,7 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware) {
         $middleware->alias([
             'permission' => \App\Http\Middleware\CheckPermission::class,
+            'check.permission' => \App\Http\Middleware\CheckPermission::class,
         ]);
 
         $middleware->web(append: [
