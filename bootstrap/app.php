@@ -13,6 +13,18 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware) {
+
+        $middleware->alias([
+            'check.permission' => \App\Http\Middleware\CheckPermission::class,
+            'ensure.profile' => \App\Http\Middleware\EnsureProfileCompleted::class,
+            'ensure.active.subscription' => \App\Http\Middleware\EnsureActiveSubscription::class,
+        ]);
+
+        $middleware->web(append: [
+            \App\Http\Middleware\HandleInertiaRequests::class,
+            \Illuminate\Http\Middleware\AddLinkHeadersForPreloadedAssets::class,
+        ]);
+
         $middleware->web(append: [
             HandleInertiaRequests::class,
             AddLinkHeadersForPreloadedAssets::class,
