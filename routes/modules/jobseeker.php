@@ -4,6 +4,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\JobSeeker\ProfileController;
 use App\Http\Controllers\JobSeeker\DashboardController;
 use App\Http\Controllers\JobSeeker\JobController;
+use App\Http\Controllers\ApplicationController;
 
 
 /*
@@ -45,7 +46,14 @@ Route::middleware(['auth','check.permission:jobseeker'])->prefix('jobseeker')->g
     Route::resource('resumes', ResumeController::class);
 });
 
+//added this 12.02 17 Nov 2025
+Route::middleware(['auth', 'check.permission:jobseeker'])->group(function () {
 
+    Route::get('/applications', [ApplicationController::class, 'index']);
+    Route::post('/applications', [ApplicationController::class, 'store']);
+    Route::put('/applications/{id}', [ApplicationController::class, 'update']);
+    
+});
 
 
     // Tambahkan route jobseeker lainnya di sini
