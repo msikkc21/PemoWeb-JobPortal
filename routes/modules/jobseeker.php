@@ -6,6 +6,8 @@ use App\Http\Controllers\JobSeeker\ProfileController;
 use App\Http\Controllers\JobSeeker\DashboardController;
 use App\Http\Controllers\JobSeeker\JobController;
 use App\Http\Controllers\JobSeeker\ResumeController;
+// use App\Http\Controllers\ApplicationController;
+
 
 /*
 ================
@@ -56,6 +58,22 @@ Route::middleware(['auth', 'check.permission:jobseeker', 'ensure.profile'])->gro
             'update' => 'jobseeker.applications.update',
             'destroy' => 'jobseeker.applications.destroy',
         ]);
+//added this 10.51 02 Okt 2025        
+Route::middleware(['auth','check.permission:jobseeker'])->prefix('jobseeker')->group(function () {
+    Route::resource('jobs', JobController::class)->only(['index','show']);
+    Route::resource('applications', ApplicationController::class);
+    Route::resource('profile', ProfileController::class)->only(['show','edit','update']);
+    Route::resource('resumes', ResumeController::class);
+});
+
+//added this 12.02 17 Nov 2025
+Route::middleware(['auth', 'check.permission:jobseeker'])->group(function () {
+
+    Route::get('/applications', [ApplicationController::class, 'index']);
+    Route::post('/applications', [ApplicationController::class, 'store']);
+    Route::put('/applications/{id}', [ApplicationController::class, 'update']);
+    
+});
 
     // Resumes routes
     Route::resource('jobseeker/resumes', ResumeController::class)
