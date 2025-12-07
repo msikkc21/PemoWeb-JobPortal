@@ -5,10 +5,12 @@ export default function Show({ auth, application }) {
     const resumeUrl = application?.resume?.cv_file ? `/storage/${application.resume.cv_file}` : null;
 
     const handleReview = () => {
-        if (!confirm('Ubah status lamaran menjadi "In Process"?')) return;
-        // use route helper if available, fallback to URL
-        const url = typeof route === 'function' ? route('company.applicants.review', application.id) : `/company/applicants/${application.id}/review`;
-        router.post(url, {}, { preserveState: true, onFinish: () => router.reload() });
+        // Navigate to schedule interview page carrying application id
+        const url =
+            typeof route === 'function'
+                ? route('company.applicants.interviews.create', application.id)
+                : `/company/applicants/${application.id}/interviews/create`;
+        router.get(url);
     };
 
     return (
@@ -129,7 +131,7 @@ export default function Show({ auth, application }) {
                                 disabled={application?.status !== 'submitted'}
                                 className={`rounded px-4 py-2 text-white ${application?.status === 'submitted' ? 'bg-indigo-600 hover:bg-indigo-700' : 'cursor-not-allowed bg-gray-300'}`}
                             >
-                                Review (set to in_process)
+                                Jadwalkan
                             </button>
                         </div>
                     </div>
