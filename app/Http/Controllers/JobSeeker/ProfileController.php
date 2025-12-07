@@ -40,13 +40,16 @@ class ProfileController extends Controller
             'github_url' => 'nullable|url|max:255',
             'portfolio_url' => 'nullable|url|max:255',
             'photo_path' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
+
+            /* === BARU: SKILL === */
+            'skills' => 'nullable|array',
+            'skills.*' => 'string|max:50',
         ]);
 
         $jobSeeker = Auth::user()->jobSeeker;
 
         // Handle photo upload
         if ($request->hasFile('photo_path')) {
-            // Delete old photo if exists
             if ($jobSeeker->photo_path) {
                 Storage::disk('public')->delete($jobSeeker->photo_path);
             }
@@ -56,6 +59,9 @@ class ProfileController extends Controller
             $path = $file->storeAs('jobseeker/photos', $filename, 'public');
             $validated['photo_path'] = $path;
         }
+
+        /* === SIMPAN SKILL === */
+        $jobSeeker->skills = $validated['skills'] ?? [];
 
         $jobSeeker->update($validated);
 
@@ -109,13 +115,16 @@ class ProfileController extends Controller
             'github_url' => 'nullable|url|max:255',
             'portfolio_url' => 'nullable|url|max:255',
             'photo_path' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
+
+            /* === BARU: SKILL === */
+            'skills' => 'nullable|array',
+            'skills.*' => 'string|max:50',
         ]);
 
         $jobSeeker = Auth::user()->jobSeeker;
 
         // Handle photo upload
         if ($request->hasFile('photo_path')) {
-            // Delete old photo if exists
             if ($jobSeeker->photo_path && Storage::disk('public')->exists($jobSeeker->photo_path)) {
                 Storage::disk('public')->delete($jobSeeker->photo_path);
             }
@@ -125,6 +134,9 @@ class ProfileController extends Controller
             $path = $file->storeAs('jobseeker/photos', $filename, 'public');
             $validated['photo_path'] = $path;
         }
+
+        /* === SIMPAN SKILL === */
+        $jobSeeker->skills = $validated['skills'] ?? [];
 
         $jobSeeker->update($validated);
 

@@ -1,8 +1,7 @@
 <?php
 
-namespace App\Http\Controllers\JobSeeker;
+namespace App\Http\Controllers;
 
-use App\Http\Controllers\Controller;
 use App\Models\Application;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;

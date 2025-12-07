@@ -1,0 +1,169 @@
+import React, { useEffect, useState } from 'react';
+import axios from 'axios';
+
+export default function ApplicationPage() {
+    const [applications, setApplications] = useState([]);
+    const [jobId, setJobId] = useState('');
+    const [resumeId, setResumeId] = useState('');
+    const [notes, setNotes] = useState('');
+    const [loading, setLoading] = useState(false);
+    const [message, setMessage] = useState('');
+
+    // ============================
+    // GET ALL APPLICATIONS
+    // ============================
+    const fetchApplications = async () => {
+        try {
+            const res = await axios.get('/applications');
+            setApplications(res.data.data);
+        } catch (error) {
+            console.error(error);
+        }
+    };
+
+    useEffect(() => {
+        fetchApplications();
+    }, []);
+
+    // ============================
+    // STORE APPLICATION
+    // ============================
+    const handleStore = async (e) => {
+        e.preventDefault();
+        setLoading(true);
+        setMessage('');
+
+        try {
+            const res = await axios.post('/applications', {
+                job_id: jobId,
+                resume_id: resumeId,
+                notes: notes
+            });
+
+            setMessage(res.data.message);
+            fetchApplications(); // refresh data
+            setJobId('');
+            setResumeId('');
+            setNotes('');
+
+        } catch (error) {
+            if (error.response && error.response.data) {
+                setMessage(error.response.data.message);
+            } else {
+                setMessage('Terjadi kesalahan.');
+            }
+        }
+
+        setLoading(false);
+    };
+
+    // ============================
+    // UPDATE STATUS
+    // ============================
+    const handleUpdateStatus = async (id, newStatus) => {
+        try {
+            const res = await axios.put(`/applications/${id}`, {
+                status: newStatus
+            });
+
+            setMessage(res.data.message);
+            fetchApplications();
+
+        } catch (error) {
+            console.error(error);
+            setMessage('Gagal memperbarui status.');
+        }
+    };
+
+    return (
+        <div style={{ padding: '20px' }}>
+            <h2>Daftar Lamaran Anda</h2>
+
+            {message && (
+                <div style={{ backgroundColor: '#eef', padding: '10px', marginBottom: '10px' }}>
+                    {message}
+                </div>
+            )}
+
+            {/* ============================ */}
+            {/* FORM BUAT LAMARAN BARU */}
+            {/* ============================ */}
+            <form onSubmit={handleStore} style={{ marginBottom: '20px' }}>
+                <div>
+                    <label>Job ID</label>
+                    <input
+                        type="number"
+                        value={jobId}
+                        onChange={(e) => setJobId(e.target.value)}
+                        required
+                    />
+                </div>
+
+                <div>
+                    <label>Resume ID</label>
+                    <input
+                        type="number"
+                        value={resumeId}
+                        onChange={(e) => setResumeId(e.target.value)}
+                        required
+                    />
+                </div>
+
+                <div>
+                    <label>Notes (opsional)</label>
+                    <textarea
+                        value={notes}
+                        onChange={(e) => setNotes(e.target.value)}
+                    ></textarea>
+                </div>
+
+                <button type="submit" disabled={loading}>
+                    {loading ? 'Mengirim...' : 'Kirim Lamaran'}
+                </button>
+            </form>
+
+            {/* ============================ */}
+            {/* TABEL LAMARAN */}
+            {/* ============================ */}
+            <table border="1" cellPadding="10">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Pekerjaan</th>
+                        <th>Resume</th>
+                        <th>Status</th>
+                        <th>Tanggal</th>
+                        <th>Aksi</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    {applications.length === 0 ? (
+                        <tr>
+                            <td colSpan="6">Belum ada lamaran.</td>
+                        </tr>
+                    ) : (
+                        applications.map((app) => (
+                            <tr key={app.id}>
+                                <td>{app.id}</td>
+                                <td>{app.job ? app.job.title : '-'}</td>
+                                <td>{app.resume ? app.resume.title : 'Resume #' + app.resume_id}</td>
+                                <td>{app.status}</td>
+                                <td>{app.application_date}</td>
+                                <td>
+                                    {app.status !== 'cancelled' && (
+                                        <button
+                                            onClick={() => handleUpdateStatus(app.id, 'cancelled')}
+                                        >
+                                            Batalkan
+                                        </button>
+                                    )}
+                                </td>
+                            </tr>
+                        ))
+                    )}
+                </tbody>
+            </table>
+        </div>
+    );
+}
