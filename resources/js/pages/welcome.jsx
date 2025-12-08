@@ -1,9 +1,11 @@
 import PrimaryButton from '@/Components/PrimaryButton';
 import TextInput from '@/Components/TextInput';
-import { Head, Link, router } from '@inertiajs/react';
+import { Head, Link, router, usePage } from '@inertiajs/react';
 import { useState } from 'react';
 
-export default function Welcome({ auth }) {
+export default function Welcome({ statistics = {}, featuredJobs = [], popularSkills = [] }) {
+    const { auth } = usePage().props;
+
     // Hero search state
     const [query, setQuery] = useState('');
     const [location, setLocation] = useState('');
@@ -11,8 +13,8 @@ export default function Welcome({ auth }) {
     const onSearch = (e) => {
         e.preventDefault();
         const params = new URLSearchParams();
-        if (query) params.set('q', query);
-        if (location) params.set('loc', location);
+        if (query) params.set('search', query);
+        if (location) params.set('location', location);
         router.visit(`/jobs?${params.toString()}`);
     };
 
@@ -51,26 +53,58 @@ export default function Welcome({ auth }) {
         },
     ];
 
-    const categories = [
-        { name: 'Engineering', param: 'engineering' },
-        { name: 'Design', param: 'design' },
-        { name: 'Product', param: 'product' },
-        { name: 'Marketing', param: 'marketing' },
-        { name: 'Finance', param: 'finance' },
-        { name: 'Operations', param: 'operations' },
-    ];
+    // Dynamic stats with fallback
+    const stats = {
+        activeJobs: statistics.activeJobs ?? 0,
+        totalCompanies: statistics.totalCompanies ?? 0,
+        totalJobSeekers: statistics.totalJobSeekers ?? 0,
+    };
+
+    // Format number to K+ format
+    const formatNumber = (num) => {
+        if (num >= 1000) {
+            return (num / 1000).toFixed(num >= 10000 ? 0 : 1) + 'K+';
+        }
+        return num.toString() + '+';
+    };
 
     // Determine role and dashboard link
-    const role = auth?.user?.role || (auth?.admin && 'admin') || (auth?.company && 'company') || (auth?.jobseeker && 'jobseeker') || null;
+    const role = auth?.user?.role?.name?.toLowerCase() || null;
 
     const dashboardHref =
         role === 'admin'
             ? '/admin/dashboard'
             : role === 'company'
-              ? '/company/dashboard'
-              : role === 'jobseeker'
-                ? '/jobseeker/dashboard'
-                : '/dashboard'; // default/jobseeker
+                ? '/company/dashboard'
+                : role === 'jobseeker'
+                    ? '/jobseeker/dashboard'
+                    : '/dashboard';
+
+    const jobTypeLabels = {
+        'full-time': 'Full Time',
+        'part-time': 'Part Time',
+        'contract': 'Kontrak',
+        'freelance': 'Freelance',
+        'internship': 'Magang',
+    };
+
+    const formatSalary = (min, max) => {
+        const formatter = new Intl.NumberFormat('id-ID', {
+            style: 'currency',
+            currency: 'IDR',
+            minimumFractionDigits: 0,
+            maximumFractionDigits: 0,
+        });
+
+        if (min && max) {
+            return `${formatter.format(min)} - ${formatter.format(max)}`;
+        } else if (min) {
+            return `Mulai ${formatter.format(min)}`;
+        } else if (max) {
+            return `Hingga ${formatter.format(max)}`;
+        }
+        return 'Gaji Kompetitif';
+    };
 
     return (
         <>
@@ -94,8 +128,6 @@ export default function Welcome({ auth }) {
                         </Link>
                     </div>
                     <nav className="flex items-center gap-2 sm:gap-3">
-                        {/* Left side shows logo and search */}
-                        {/* Right side only shows auth actions */}
                         {auth?.user ? (
                             <Link href={dashboardHref} className="rounded-md bg-gray-900 px-3 py-2 text-sm text-white transition hover:bg-gray-800">
                                 Dashboard
@@ -185,63 +217,95 @@ export default function Welcome({ auth }) {
                                 )}
                             </div>
 
+                            {/* Dynamic Stats */}
                             <div className="mt-8 grid grid-cols-3 gap-6 text-center sm:max-w-md sm:text-left">
                                 <div>
-                                    <div className="text-2xl font-bold text-gray-900">12K+</div>
+                                    <div className="text-2xl font-bold text-gray-900">{formatNumber(stats.activeJobs)}</div>
                                     <div className="text-sm text-gray-500">Lowongan aktif</div>
                                 </div>
                                 <div>
-                                    <div className="text-2xl font-bold text-gray-900">3K+</div>
+                                    <div className="text-2xl font-bold text-gray-900">{formatNumber(stats.totalCompanies)}</div>
                                     <div className="text-sm text-gray-500">Perusahaan</div>
                                 </div>
                                 <div>
-                                    <div className="text-2xl font-bold text-gray-900">98%</div>
-                                    <div className="text-sm text-gray-500">Kepuasan pelamar</div>
+                                    <div className="text-2xl font-bold text-gray-900">{formatNumber(stats.totalJobSeekers)}</div>
+                                    <div className="text-sm text-gray-500">Job Seeker</div>
                                 </div>
                             </div>
                         </div>
 
+                        {/* Featured Jobs Preview */}
                         <div className="relative">
                             <div className="absolute -inset-4 -z-10 rounded-3xl bg-gradient-to-tr from-blue-100 via-indigo-50 to-purple-100 blur-2xl" />
                             <div className="rounded-2xl border border-gray-100 bg-white p-4 shadow-[0_14px_34px_rgba(0,0,0,0.06)]">
-                                <div className="aspect-[4/3] w-full rounded-xl bg-gradient-to-br from-blue-600 to-indigo-600 p-6">
-                                    <div className="flex h-full w-full items-end justify-between rounded-lg bg-white/10 p-4 backdrop-blur">
-                                        <div className="text-white">
-                                            <div className="text-sm opacity-90">Contoh Lowongan</div>
-                                            <div className="text-xl font-semibold">Frontend Engineer</div>
-                                            <div className="text-sm opacity-90">Remote • Full-time</div>
+                                {featuredJobs.length > 0 ? (
+                                    <>
+                                        <div className="aspect-[4/3] w-full rounded-xl bg-gradient-to-br from-blue-600 to-indigo-600 p-6">
+                                            <div className="flex h-full w-full items-end justify-between rounded-lg bg-white/10 p-4 backdrop-blur">
+                                                <div className="text-white">
+                                                    <div className="text-sm opacity-90">Lowongan Terbaru</div>
+                                                    <div className="text-xl font-semibold">{featuredJobs[0]?.title}</div>
+                                                    <div className="text-sm opacity-90">{featuredJobs[0]?.location || 'Remote'} • {jobTypeLabels[featuredJobs[0]?.job_type] || 'Full-time'}</div>
+                                                </div>
+                                                <div className="rounded-md bg-white/20 px-3 py-1 text-sm text-white">
+                                                    {formatSalary(featuredJobs[0]?.salary_min, featuredJobs[0]?.salary_max)}
+                                                </div>
+                                            </div>
                                         </div>
-                                        <div className="rounded-md bg-white/20 px-3 py-1 text-sm text-white">Gaji Kompetitif</div>
-                                    </div>
-                                </div>
-                                <div className="mt-4 grid grid-cols-3 gap-3">
-                                    {/* ...mini cards... */}
-                                    <div className="rounded-lg border border-gray-100 p-3">
-                                        <div className="text-sm font-medium text-gray-900">UI/UX Designer</div>
-                                        <div className="text-xs text-gray-500">Jakarta</div>
-                                    </div>
-                                    <div className="rounded-lg border border-gray-100 p-3">
-                                        <div className="text-sm font-medium text-gray-900">Data Analyst</div>
-                                        <div className="text-xs text-gray-500">Bandung</div>
-                                    </div>
-                                    <div className="rounded-lg border border-gray-100 p-3">
-                                        <div className="text-sm font-medium text-gray-900">Backend Dev</div>
-                                        <div className="text-xs text-gray-500">Remote</div>
-                                    </div>
-                                </div>
+                                        <div className="mt-4 grid grid-cols-3 gap-3">
+                                            {featuredJobs.slice(1, 4).map((job) => (
+                                                <Link
+                                                    key={job.id}
+                                                    href={`/jobs/${job.id}`}
+                                                    className="rounded-lg border border-gray-100 p-3 hover:border-indigo-200 hover:bg-indigo-50/50 transition"
+                                                >
+                                                    <div className="text-sm font-medium text-gray-900 truncate">{job.title}</div>
+                                                    <div className="text-xs text-gray-500">{job.location || 'Remote'}</div>
+                                                </Link>
+                                            ))}
+                                        </div>
+                                    </>
+                                ) : (
+                                    <>
+                                        <div className="aspect-[4/3] w-full rounded-xl bg-gradient-to-br from-blue-600 to-indigo-600 p-6">
+                                            <div className="flex h-full w-full items-end justify-between rounded-lg bg-white/10 p-4 backdrop-blur">
+                                                <div className="text-white">
+                                                    <div className="text-sm opacity-90">Contoh Lowongan</div>
+                                                    <div className="text-xl font-semibold">Frontend Engineer</div>
+                                                    <div className="text-sm opacity-90">Remote • Full-time</div>
+                                                </div>
+                                                <div className="rounded-md bg-white/20 px-3 py-1 text-sm text-white">Gaji Kompetitif</div>
+                                            </div>
+                                        </div>
+                                        <div className="mt-4 grid grid-cols-3 gap-3">
+                                            <div className="rounded-lg border border-gray-100 p-3">
+                                                <div className="text-sm font-medium text-gray-900">UI/UX Designer</div>
+                                                <div className="text-xs text-gray-500">Jakarta</div>
+                                            </div>
+                                            <div className="rounded-lg border border-gray-100 p-3">
+                                                <div className="text-sm font-medium text-gray-900">Data Analyst</div>
+                                                <div className="text-xs text-gray-500">Bandung</div>
+                                            </div>
+                                            <div className="rounded-lg border border-gray-100 p-3">
+                                                <div className="text-sm font-medium text-gray-900">Backend Dev</div>
+                                                <div className="text-xs text-gray-500">Remote</div>
+                                            </div>
+                                        </div>
+                                    </>
+                                )}
                             </div>
                         </div>
                     </div>
                 </div>
             </section>
 
-            {/* Categories */}
+            {/* Categories / Popular Skills */}
             <section className="bg-white">
                 <div className="mx-auto max-w-7xl px-6 py-14">
                     <div className="mb-8 flex items-center justify-between">
                         <div>
                             <h2 className="text-2xl font-semibold text-gray-900">Kategori Populer</h2>
-                            <p className="mt-1 text-sm text-gray-600">Telusuri lowongan berdasarkan kategori</p>
+                            <p className="mt-1 text-sm text-gray-600">Telusuri lowongan berdasarkan skill</p>
                         </div>
                         <Link href="/jobs" className="text-sm font-medium text-blue-600 hover:text-blue-700">
                             Lihat semua
@@ -249,41 +313,80 @@ export default function Welcome({ auth }) {
                     </div>
 
                     <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                        {categories.map((c) => (
-                            <Link
-                                key={c.param}
-                                href={`/jobs?category=${encodeURIComponent(c.param)}`}
-                                className="group flex items-center justify-between rounded-lg border border-gray-100 bg-white p-5 transition hover:shadow-[0_14px_34px_rgba(0,0,0,0.06)]"
-                            >
-                                <div className="flex items-center gap-4">
-                                    <div className="flex size-10 items-center justify-center rounded-full bg-blue-50 text-blue-600">
-                                        <svg
-                                            xmlns="http://www.w3.org/2000/svg"
-                                            className="size-5"
-                                            fill="none"
-                                            viewBox="0 0 24 24"
-                                            stroke="currentColor"
-                                        >
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M4 6h16M4 12h16M4 18h7" />
-                                        </svg>
-                                    </div>
-                                    <div>
-                                        <div className="font-medium text-gray-900">{c.name}</div>
-                                        <div className="text-xs text-gray-500">Ratusan lowongan</div>
-                                    </div>
-                                </div>
-                                <svg
-                                    className="size-5 text-gray-400 transition group-hover:translate-x-1 group-hover:text-gray-600"
-                                    xmlns="http://www.w3.org/2000/svg"
-                                    fill="none"
-                                    viewBox="0 0 24 24"
-                                    strokeWidth="1.5"
-                                    stroke="currentColor"
+                        {popularSkills.length > 0 ? (
+                            popularSkills.map((skill) => (
+                                <Link
+                                    key={skill.id}
+                                    href={`/jobs?search=${encodeURIComponent(skill.name)}`}
+                                    className="group flex items-center justify-between rounded-lg border border-gray-100 bg-white p-5 transition hover:shadow-[0_14px_34px_rgba(0,0,0,0.06)]"
                                 >
-                                    <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
-                                </svg>
-                            </Link>
-                        ))}
+                                    <div className="flex items-center gap-4">
+                                        <div className="flex size-10 items-center justify-center rounded-full bg-blue-50 text-blue-600">
+                                            <svg
+                                                xmlns="http://www.w3.org/2000/svg"
+                                                className="size-5"
+                                                fill="none"
+                                                viewBox="0 0 24 24"
+                                                stroke="currentColor"
+                                            >
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M4 6h16M4 12h16M4 18h7" />
+                                            </svg>
+                                        </div>
+                                        <div>
+                                            <div className="font-medium text-gray-900">{skill.name}</div>
+                                            <div className="text-xs text-gray-500">{skill.jobs_count} lowongan</div>
+                                        </div>
+                                    </div>
+                                    <svg
+                                        className="size-5 text-gray-400 transition group-hover:translate-x-1 group-hover:text-gray-600"
+                                        xmlns="http://www.w3.org/2000/svg"
+                                        fill="none"
+                                        viewBox="0 0 24 24"
+                                        strokeWidth="1.5"
+                                        stroke="currentColor"
+                                    >
+                                        <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
+                                    </svg>
+                                </Link>
+                            ))
+                        ) : (
+                            // Fallback categories
+                            ['Engineering', 'Design', 'Product', 'Marketing', 'Finance', 'Operations'].map((name) => (
+                                <Link
+                                    key={name}
+                                    href={`/jobs?search=${encodeURIComponent(name)}`}
+                                    className="group flex items-center justify-between rounded-lg border border-gray-100 bg-white p-5 transition hover:shadow-[0_14px_34px_rgba(0,0,0,0.06)]"
+                                >
+                                    <div className="flex items-center gap-4">
+                                        <div className="flex size-10 items-center justify-center rounded-full bg-blue-50 text-blue-600">
+                                            <svg
+                                                xmlns="http://www.w3.org/2000/svg"
+                                                className="size-5"
+                                                fill="none"
+                                                viewBox="0 0 24 24"
+                                                stroke="currentColor"
+                                            >
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M4 6h16M4 12h16M4 18h7" />
+                                            </svg>
+                                        </div>
+                                        <div>
+                                            <div className="font-medium text-gray-900">{name}</div>
+                                            <div className="text-xs text-gray-500">Ratusan lowongan</div>
+                                        </div>
+                                    </div>
+                                    <svg
+                                        className="size-5 text-gray-400 transition group-hover:translate-x-1 group-hover:text-gray-600"
+                                        xmlns="http://www.w3.org/2000/svg"
+                                        fill="none"
+                                        viewBox="0 0 24 24"
+                                        strokeWidth="1.5"
+                                        stroke="currentColor"
+                                    >
+                                        <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
+                                    </svg>
+                                </Link>
+                            ))
+                        )}
                     </div>
                 </div>
             </section>
@@ -310,6 +413,7 @@ export default function Welcome({ auth }) {
                     </div>
                 </div>
             </section>
+
             {/* CTA */}
             <section className="bg-white">
                 <div className="mx-auto max-w-7xl px-6 pb-16 pt-6">
@@ -343,6 +447,13 @@ export default function Welcome({ auth }) {
                     </div>
                 </div>
             </section>
+
+            {/* Footer */}
+            <footer className="bg-gray-900 text-white py-8">
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+                    <p className="text-gray-400">© 2025 JobPortal. All rights reserved.</p>
+                </div>
+            </footer>
         </>
     );
 }
