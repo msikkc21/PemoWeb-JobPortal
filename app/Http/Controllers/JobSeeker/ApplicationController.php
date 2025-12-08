@@ -4,8 +4,10 @@ namespace App\Http\Controllers\JobSeeker;
 
 use App\Http\Controllers\Controller;
 use App\Models\Application;
+use App\Models\Job;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Inertia\Inertia;
 
 class ApplicationController extends Controller
 {
@@ -14,93 +16,114 @@ class ApplicationController extends Controller
      */
     public function index()
     {
-        $jobSeekerId = Auth::id(); // id user yang login
+        $user = Auth::user();
+        $jobSeeker = $user->jobSeeker;
 
-        $applications = Application::with(['job', 'resume'])
-            ->where('job_seeker_id', $jobSeekerId)
+        if (!$jobSeeker) {
+            return redirect('/jobseeker/onboarding')
+                ->with('error', 'Silakan lengkapi profil terlebih dahulu.');
+        }
+
+        $applications = Application::with(['job.company', 'resume', 'interview'])
+            ->where('job_seeker_id', $jobSeeker->id)
             ->orderBy('application_date', 'desc')
             ->get();
 
-        return response()->json([
-            'success' => true,
-            'data' => $applications
+        return Inertia::render('JobSeeker/Applications/Index', [
+            'applications' => $applications,
         ]);
     }
 
     /**
-     * Buat lamaran baru (cek duplikasi)
+     * Buat lamaran baru (Apply for Job)
      */
     public function store(Request $request)
     {
         $request->validate([
             'job_id' => 'required|integer',
-            'resume_id' => 'required|integer',
-            'notes' => 'nullable|string',
+            'notes' => 'nullable|string|max:500',
         ]);
 
-        $jobSeekerId = Auth::id();
+        $user = Auth::user();
+        $jobSeeker = $user->jobSeeker;
 
-        // Cek apakah user sudah pernah melamar job yang sama
+        if (!$jobSeeker) {
+            return redirect('/jobseeker/onboarding')
+                ->with('error', 'Silakan lengkapi profil terlebih dahulu.');
+        }
+
+        // Validation 1: Check job status
+        $job = Job::findOrFail($request->job_id);
+        if ($job->status !== 'approved') {
+            return redirect()->back()
+                ->with('error', 'Lowongan ini tidak tersedia untuk dilamar.');
+        }
+
+        // Validation 2: Check resume
+        $resume = $jobSeeker->resumes()->latest('upload_date')->first();
+        if (!$resume) {
+            return redirect('/jobseeker/resumes')
+                ->with('error', 'Silakan upload CV terlebih dahulu sebelum melamar.');
+        }
+
+        // Validation 3: Check duplicate
         $existing = Application::where('job_id', $request->job_id)
-            ->where('job_seeker_id', $jobSeekerId)
+            ->where('job_seeker_id', $jobSeeker->id)
             ->first();
 
         if ($existing) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Anda sudah pernah melamar pekerjaan ini.'
-            ], 409);
+            return redirect()->back()
+                ->with('error', 'Anda sudah pernah melamar pekerjaan ini.');
         }
 
-        // Simpan lamaran baru
-        $application = Application::create([
+        // Create application
+        Application::create([
             'job_id' => $request->job_id,
-            'job_seeker_id' => $jobSeekerId,
-            'resume_id' => $request->resume_id,
+            'job_seeker_id' => $jobSeeker->id,
+            'resume_id' => $resume->id,
             'status' => 'submitted',
             'application_date' => now(),
             'notes' => $request->notes,
         ]);
 
-        return response()->json([
-            'success' => true,
-            'message' => 'Lamaran berhasil dikirim.',
-            'data' => $application
-        ], 201);
+        return redirect('/jobseeker/applications')
+            ->with('success', 'Lamaran berhasil dikirim!');
     }
 
     /**
-     * Update status lamaran (misalnya "cancelled")
+     * Display single application detail
      */
-    public function update(Request $request, $id)
+    public function show($id)
     {
-        $request->validate([
-            'status' => 'required|string'
+        $user = Auth::user();
+        $jobSeeker = $user->jobSeeker;
+
+        $application = Application::with(['job.company', 'resume', 'interview'])
+            ->where('id', $id)
+            ->where('job_seeker_id', $jobSeeker->id)
+            ->firstOrFail();
+
+        return Inertia::render('JobSeeker/Applications/Show', [
+            'application' => $application,
         ]);
+    }
 
-        $jobSeekerId = Auth::id();
+    /**
+     * Cancel/withdraw application
+     */
+    public function destroy($id)
+    {
+        $user = Auth::user();
+        $jobSeeker = $user->jobSeeker;
 
-        // Pastikan lamaran milik user
         $application = Application::where('id', $id)
-            ->where('job_seeker_id', $jobSeekerId)
-            ->first();
+            ->where('job_seeker_id', $jobSeeker->id)
+            ->where('status', 'submitted') // Only submitted can be cancelled
+            ->firstOrFail();
 
-        if (!$application) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Lamaran tidak ditemukan atau bukan milik Anda.'
-            ], 404);
-        }
+        $application->delete();
 
-        // Update status
-        $application->update([
-            'status' => $request->status
-        ]);
-
-        return response()->json([
-            'success' => true,
-            'message' => 'Status lamaran berhasil diperbarui.',
-            'data' => $application
-        ]);
+        return redirect('/jobseeker/applications')
+            ->with('success', 'Lamaran berhasil dibatalkan.');
     }
 }

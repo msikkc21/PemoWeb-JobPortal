@@ -3,13 +3,13 @@ import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { useState, useEffect, useRef } from 'react';
 
 export default function Index() {
-    const { auth, users, roles, search: initialSearch = '', selectedRole: initialRole = '' } = usePage().props;
+    const { auth, skills, search: initialSearch = '' } = usePage().props;
     const [searchTerm, setSearchTerm] = useState(initialSearch);
-    const [roleFilter, setRoleFilter] = useState(initialRole);
     const [isSearching, setIsSearching] = useState(false);
     const isInitialMount = useRef(true);
     const debounceTimer = useRef(null);
 
+    // Flash messages
     const { flash } = usePage().props;
 
     // Realtime search with debounce
@@ -26,11 +26,7 @@ export default function Index() {
         }
 
         debounceTimer.current = setTimeout(() => {
-            const params = {};
-            if (searchTerm) params.search = searchTerm;
-            if (roleFilter) params.role = roleFilter;
-
-            router.get('/admin/users', params, {
+            router.get('/admin/skills', { search: searchTerm }, {
                 preserveState: true,
                 replace: true,
                 onFinish: () => setIsSearching(false),
@@ -44,56 +40,32 @@ export default function Index() {
         };
     }, [searchTerm]);
 
-    const handleRoleFilter = (e) => {
-        const role = e.target.value;
-        setRoleFilter(role);
-
-        const params = {};
-        if (searchTerm) params.search = searchTerm;
-        if (role) params.role = role;
-
-        router.get('/admin/users', params, {
-            preserveState: true,
-            replace: true,
-        });
-    };
-
-    const handleDelete = (user) => {
-        if (confirm(`Apakah Anda yakin ingin menghapus user "${user.name}"?`)) {
-            router.delete(`/admin/users/${user.id}`);
+    const handleDelete = (skill) => {
+        if (confirm(`Apakah Anda yakin ingin menghapus skill "${skill.name}"?`)) {
+            router.delete(`/admin/skills/${skill.id}`);
         }
-    };
-
-    const getRoleBadge = (role) => {
-        const styles = {
-            admin: 'bg-purple-100 text-purple-800',
-            company: 'bg-blue-100 text-blue-800',
-            jobseeker: 'bg-green-100 text-green-800',
-        };
-        const roleName = role?.name?.toLowerCase() || '';
-        return styles[roleName] || 'bg-gray-100 text-gray-800';
     };
 
     return (
         <AuthenticatedLayout user={auth.user}>
-            <Head title="Kelola Users - Admin" />
+            <Head title="Kelola Skills - Admin" />
 
             <div className="py-12">
                 <div className="max-w-7xl mx-auto sm:px-6 lg:px-8">
                     {/* Header */}
                     <div className="flex justify-between items-center mb-6">
                         <div>
-                            <h1 className="text-3xl font-bold text-gray-900">Kelola Users</h1>
-                            <p className="mt-1 text-gray-600">Kelola semua pengguna di platform</p>
+                            <h1 className="text-3xl font-bold text-gray-900">Kelola Skills</h1>
+                            <p className="mt-1 text-gray-600">Kelola daftar skill yang tersedia di platform</p>
                         </div>
                         <Link
-                            href="/admin/users/create"
+                            href="/admin/skills/create"
                             className="inline-flex items-center px-4 py-2 bg-indigo-600 text-white font-medium rounded-lg hover:bg-indigo-700 transition-colors"
                         >
                             <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4" />
                             </svg>
-                            Tambah User
+                            Tambah Skill
                         </Link>
                     </div>
 
@@ -109,16 +81,15 @@ export default function Index() {
                         </div>
                     )}
 
-                    {/* Search and Filter */}
-                    <div className="mb-6 flex flex-col md:flex-row gap-4">
-                        {/* Search */}
-                        <div className="flex-1 relative">
+                    {/* Search */}
+                    <div className="mb-6">
+                        <div className="relative">
                             <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                             </svg>
                             <input
                                 type="text"
-                                placeholder="Cari nama atau email..."
+                                placeholder="Cari skill..."
                                 value={searchTerm}
                                 onChange={(e) => setSearchTerm(e.target.value)}
                                 className="w-full pl-10 pr-10 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
@@ -143,20 +114,6 @@ export default function Index() {
                                 </button>
                             )}
                         </div>
-
-                        {/* Role Filter */}
-                        <select
-                            value={roleFilter}
-                            onChange={handleRoleFilter}
-                            className="px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-                        >
-                            <option value="">Semua Role</option>
-                            {roles?.map((role) => (
-                                <option key={role.id} value={role.id}>
-                                    {role.display_name || role.name}
-                                </option>
-                            ))}
-                        </select>
                     </div>
 
                     {/* Table */}
@@ -165,13 +122,16 @@ export default function Index() {
                             <thead className="bg-gray-50">
                                 <tr>
                                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        User
+                                        Nama Skill
                                     </th>
                                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        Role
+                                        Deskripsi
                                     </th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        Tanggal Daftar
+                                    <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        Lowongan
+                                    </th>
+                                    <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        Job Seeker
                                     </th>
                                     <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
                                         Aksi
@@ -179,38 +139,31 @@ export default function Index() {
                                 </tr>
                             </thead>
                             <tbody className="bg-white divide-y divide-gray-200">
-                                {users?.data?.length > 0 ? (
-                                    users.data.map((user) => (
-                                        <tr key={user.id} className="hover:bg-gray-50">
+                                {skills?.data?.length > 0 ? (
+                                    skills.data.map((skill) => (
+                                        <tr key={skill.id} className="hover:bg-gray-50">
                                             <td className="px-6 py-4 whitespace-nowrap">
-                                                <div className="flex items-center">
-                                                    <div className="flex-shrink-0 h-10 w-10 bg-gray-200 rounded-full flex items-center justify-center">
-                                                        <span className="text-gray-600 font-medium">
-                                                            {user.name?.charAt(0)?.toUpperCase()}
-                                                        </span>
-                                                    </div>
-                                                    <div className="ml-4">
-                                                        <div className="text-sm font-medium text-gray-900">{user.name}</div>
-                                                        <div className="text-sm text-gray-500">{user.email}</div>
-                                                    </div>
+                                                <div className="text-sm font-medium text-gray-900">{skill.name}</div>
+                                            </td>
+                                            <td className="px-6 py-4">
+                                                <div className="text-sm text-gray-600 max-w-xs truncate">
+                                                    {skill.description || '-'}
                                                 </div>
                                             </td>
-                                            <td className="px-6 py-4 whitespace-nowrap">
-                                                <span className={`px-2 py-1 text-xs font-medium rounded-full ${getRoleBadge(user.role)}`}>
-                                                    {user.role?.display_name || user.role?.name || 'N/A'}
+                                            <td className="px-6 py-4 whitespace-nowrap text-center">
+                                                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                                                    {skill.jobs_count || 0}
                                                 </span>
                                             </td>
-                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                                {new Date(user.created_at).toLocaleDateString('id-ID', {
-                                                    day: 'numeric',
-                                                    month: 'short',
-                                                    year: 'numeric'
-                                                })}
+                                            <td className="px-6 py-4 whitespace-nowrap text-center">
+                                                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                                    {skill.job_seekers_count || 0}
+                                                </span>
                                             </td>
                                             <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                                                 <div className="flex justify-end gap-2">
                                                     <Link
-                                                        href={`/admin/users/${user.id}`}
+                                                        href={`/admin/skills/${skill.id}`}
                                                         className="text-gray-600 hover:text-gray-900"
                                                         title="Lihat Detail"
                                                     >
@@ -220,7 +173,7 @@ export default function Index() {
                                                         </svg>
                                                     </Link>
                                                     <Link
-                                                        href={`/admin/users/${user.id}/edit`}
+                                                        href={`/admin/skills/${skill.id}/edit`}
                                                         className="text-indigo-600 hover:text-indigo-900"
                                                         title="Edit"
                                                     >
@@ -228,25 +181,23 @@ export default function Index() {
                                                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                                                         </svg>
                                                     </Link>
-                                                    {user.id !== auth.user.id && (
-                                                        <button
-                                                            onClick={() => handleDelete(user)}
-                                                            className="text-red-600 hover:text-red-900"
-                                                            title="Hapus"
-                                                        >
-                                                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                                            </svg>
-                                                        </button>
-                                                    )}
+                                                    <button
+                                                        onClick={() => handleDelete(skill)}
+                                                        className="text-red-600 hover:text-red-900"
+                                                        title="Hapus"
+                                                    >
+                                                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                                        </svg>
+                                                    </button>
                                                 </div>
                                             </td>
                                         </tr>
                                     ))
                                 ) : (
                                     <tr>
-                                        <td colSpan="4" className="px-6 py-12 text-center text-gray-500">
-                                            {searchTerm || roleFilter ? 'Tidak ada user yang cocok dengan filter.' : 'Belum ada user.'}
+                                        <td colSpan="5" className="px-6 py-12 text-center text-gray-500">
+                                            {searchTerm ? 'Tidak ada skill yang cocok dengan pencarian.' : 'Belum ada skill.'}
                                         </td>
                                     </tr>
                                 )}
@@ -255,34 +206,27 @@ export default function Index() {
                     </div>
 
                     {/* Pagination */}
-                    {users?.last_page > 1 && (
+                    {skills?.last_page > 1 && (
                         <div className="flex justify-center gap-2 mt-6">
-                            {Array.from({ length: users.last_page }, (_, i) => i + 1).map((page) => {
-                                const params = new URLSearchParams();
-                                params.set('page', page);
-                                if (searchTerm) params.set('search', searchTerm);
-                                if (roleFilter) params.set('role', roleFilter);
-
-                                return (
-                                    <Link
-                                        key={page}
-                                        href={`/admin/users?${params.toString()}`}
-                                        preserveState
-                                        className={`px-4 py-2 border rounded-md font-medium transition-colors ${page === users.current_page
-                                                ? 'bg-indigo-600 text-white border-indigo-600'
-                                                : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
-                                            }`}
-                                    >
-                                        {page}
-                                    </Link>
-                                );
-                            })}
+                            {Array.from({ length: skills.last_page }, (_, i) => i + 1).map((page) => (
+                                <Link
+                                    key={page}
+                                    href={`/admin/skills?page=${page}${searchTerm ? `&search=${searchTerm}` : ''}`}
+                                    preserveState
+                                    className={`px-4 py-2 border rounded-md font-medium transition-colors ${page === skills.current_page
+                                            ? 'bg-indigo-600 text-white border-indigo-600'
+                                            : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
+                                        }`}
+                                >
+                                    {page}
+                                </Link>
+                            ))}
                         </div>
                     )}
 
                     {/* Stats */}
                     <div className="mt-6 text-sm text-gray-500 text-center">
-                        Menampilkan {users?.data?.length || 0} dari {users?.total || 0} user
+                        Menampilkan {skills?.data?.length || 0} dari {skills?.total || 0} skill
                     </div>
                 </div>
             </div>

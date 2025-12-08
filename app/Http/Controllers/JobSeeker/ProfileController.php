@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\JobSeeker;
 
 use App\Http\Controllers\Controller;
+use App\Models\Skill;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
@@ -15,7 +16,20 @@ class ProfileController extends Controller
      */
     public function onboardingShow()
     {
-        return Inertia::render('JobSeeker/OnboardingJobSeeker');
+        $skills = Skill::orderBy('name')->get();
+        $jobSeeker = Auth::user()->jobSeeker;
+        $existingSkills = $jobSeeker ? $jobSeeker->skills->map(function ($skill) {
+            return [
+                'id' => $skill->id,
+                'name' => $skill->name,
+                'level' => $skill->pivot->level,
+            ];
+        }) : [];
+
+        return Inertia::render('JobSeeker/OnboardingJobSeeker', [
+            'skills' => $skills,
+            'existingSkills' => $existingSkills,
+        ]);
     }
 
     /**
@@ -40,6 +54,14 @@ class ProfileController extends Controller
             'github_url' => 'nullable|url|max:255',
             'portfolio_url' => 'nullable|url|max:255',
             'photo_path' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
+            
+            // Skills
+            'skills' => 'nullable|array',
+            'skills.*.skill_id' => 'required_with:skills|exists:skills,id',
+            'skills.*.level' => 'required_with:skills|in:beginner,intermediate,expert',
+            
+            // CV File
+            'cv_file' => 'nullable|file|mimes:pdf,doc,docx|max:5120',
         ]);
 
         $jobSeeker = Auth::user()->jobSeeker;
@@ -57,9 +79,42 @@ class ProfileController extends Controller
             $validated['photo_path'] = $path;
         }
 
+        // Remove skills and cv_file from validated data before update
+        $skillsData = $validated['skills'] ?? [];
+        unset($validated['skills']);
+        unset($validated['cv_file']);
+
         $jobSeeker->update($validated);
 
-        return redirect()->route('jobseeker.dashboard')->with('success', 'Profil berhasil dilengkapi!');
+        // Sync skills with pivot data
+        if (!empty($skillsData)) {
+            $syncData = [];
+            foreach ($skillsData as $skill) {
+                $syncData[$skill['skill_id']] = [
+                    'level' => $skill['level'],
+                    'experience_years' => 0,
+                ];
+            }
+            $jobSeeker->skills()->sync($syncData);
+        } else {
+            $jobSeeker->skills()->detach();
+        }
+
+        // Handle CV upload
+        if ($request->hasFile('cv_file')) {
+            $cvFile = $request->file('cv_file');
+            $cvFilename = time() . '_' . $cvFile->getClientOriginalName();
+            $cvPath = $cvFile->storeAs('jobseeker/resumes', $cvFilename, 'public');
+
+            // Create resume record
+            \App\Models\Resume::create([
+                'job_seeker_id' => $jobSeeker->id,
+                'cv_file' => $cvPath,
+                'upload_date' => now(),
+            ]);
+        }
+
+        return redirect('/jobseeker/dashboard')->with('success', 'Profil berhasil dilengkapi!');
     }
 
     /**
@@ -68,7 +123,7 @@ class ProfileController extends Controller
     public function show()
     {
         $jobSeeker = Auth::user()->jobSeeker;
-        $jobSeeker->load('user');
+        $jobSeeker->load('user', 'skills');
         
         return Inertia::render('JobSeeker/Profile/ViewJobSeeker', [
             'jobSeeker' => $jobSeeker
@@ -81,9 +136,21 @@ class ProfileController extends Controller
     public function edit()
     {
         $jobSeeker = Auth::user()->jobSeeker;
+        $jobSeeker->load('skills');
+        
+        $skills = Skill::orderBy('name')->get();
+        $existingSkills = $jobSeeker->skills->map(function ($skill) {
+            return [
+                'id' => $skill->id,
+                'name' => $skill->name,
+                'level' => $skill->pivot->level,
+            ];
+        });
         
         return Inertia::render('JobSeeker/Profile/EditJobSeeker', [
-            'jobSeeker' => $jobSeeker
+            'jobSeeker' => $jobSeeker,
+            'skills' => $skills,
+            'existingSkills' => $existingSkills,
         ]);
     }
 
@@ -109,6 +176,11 @@ class ProfileController extends Controller
             'github_url' => 'nullable|url|max:255',
             'portfolio_url' => 'nullable|url|max:255',
             'photo_path' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
+            
+            // Skills
+            'skills' => 'nullable|array',
+            'skills.*.skill_id' => 'required_with:skills|exists:skills,id',
+            'skills.*.level' => 'required_with:skills|in:beginner,intermediate,expert',
         ]);
 
         $jobSeeker = Auth::user()->jobSeeker;
@@ -126,8 +198,26 @@ class ProfileController extends Controller
             $validated['photo_path'] = $path;
         }
 
+        // Remove skills from validated data before update
+        $skillsData = $validated['skills'] ?? [];
+        unset($validated['skills']);
+
         $jobSeeker->update($validated);
 
-        return redirect()->route('jobseeker.profile.show')->with('success', 'Profil berhasil diperbarui!');
+        // Sync skills with pivot data
+        if (!empty($skillsData)) {
+            $syncData = [];
+            foreach ($skillsData as $skill) {
+                $syncData[$skill['skill_id']] = [
+                    'level' => $skill['level'],
+                    'experience_years' => 0,
+                ];
+            }
+            $jobSeeker->skills()->sync($syncData);
+        } else {
+            $jobSeeker->skills()->detach();
+        }
+
+        return redirect('/jobseeker/profile')->with('success', 'Profil berhasil diperbarui!');
     }
 }

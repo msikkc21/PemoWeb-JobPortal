@@ -3,63 +3,72 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\Job;
 use Illuminate\Http\Request;
+use Inertia\Inertia;
 
 class JobController extends Controller
 {
     /**
-     * Display a listing of the resource.
+     * Display a listing of pending jobs for review.
      */
     public function index()
     {
-        //
+        $jobs = Job::where('status', Job::STATUS_PENDING_REVIEW)
+            ->with(['company:id,company_name,photo_path'])
+            ->orderBy('created_at', 'desc')
+            ->paginate(10);
+
+        return Inertia::render('Admin/Jobs/Index', [
+            'jobs' => $jobs,
+        ]);
     }
 
     /**
-     * Show the form for creating a new resource.
+     * Display the specified job for review.
      */
-    public function create()
+    public function show(Job $job)
     {
-        //
+        $job->load(['company:id,company_name,photo_path,description', 'skills']);
+
+        return Inertia::render('Admin/Jobs/Review', [
+            'job' => $job,
+        ]);
     }
 
     /**
-     * Store a newly created resource in storage.
+     * Approve the specified job.
      */
-    public function store(Request $request)
+    public function approve(Job $job)
     {
-        //
+        $job->update([
+            'status' => Job::STATUS_APPROVED,
+            'rejection_reason' => null,
+        ]);
+
+        return redirect()->route('admin.jobs.pending')
+            ->with('success', 'Lowongan berhasil disetujui dan telah dipublikasikan.');
     }
 
     /**
-     * Display the specified resource.
+     * Reject the specified job with a reason.
      */
-    public function show(string $id)
+    public function reject(Request $request, Job $job)
     {
-        //
-    }
+        $request->validate([
+            'rejection_reason' => 'required|string|min:10|max:1000',
+        ], [
+            'rejection_reason.required' => 'Alasan penolakan wajib diisi.',
+            'rejection_reason.min' => 'Alasan penolakan minimal 10 karakter.',
+            'rejection_reason.max' => 'Alasan penolakan maksimal 1000 karakter.',
+        ]);
 
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(string $id)
-    {
-        //
-    }
+        $job->update([
+            'status' => 'rejected',
+            'rejection_reason' => $request->rejection_reason,
+        ]);
 
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, string $id)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(string $id)
-    {
-        //
+        return redirect()->route('admin.jobs.pending')
+            ->with('success', 'Lowongan berhasil ditolak.');
     }
 }

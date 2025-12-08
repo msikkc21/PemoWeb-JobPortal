@@ -18,25 +18,26 @@ export default function Navbar() {
             case 'admin':
                 return [
                     { name: 'Dashboard', route: 'admin.dashboard' },
-                    { name: 'Jobs Review', route: 'admin.dashboard' },
-                    { name: 'Skills Management', route: 'admin.dashboard' },
-                    { name: 'Users', route: 'admin.dashboard' },
+                    { name: 'Jobs Review', route: 'admin.jobs.pending' },
+                    { name: 'Skills Management', href: '/admin/skills' }, // belum ada route
+                    { name: 'Users', href: '/admin/users' }, // belum ada route
                 ];
             case 'company':
                 return [
                     { name: 'Dashboard', route: 'company.dashboard' },
                     // resource routes use names like 'company.jobs.index' for the list page
                     { name: 'Jobs', route: 'company.jobs.index' },
-                    { name: 'Interview', route: 'company.interviews.index' },
+                    { name: 'Interview', route: 'company.interviews.index' }, // hardcoded URL karena Ziggy belum update
                     { name: 'Subscription', route: 'company.subscription.index' },
                     { name: 'Profile', route: 'company.profile.show' },
                 ];
             case 'jobseeker':
                 return [
                     { name: 'Dashboard', route: 'jobseeker.dashboard' },
-                    { name: 'Browse Jobs', route: 'jobseeker.jobs.index' },
-                    { name: 'My Applications', route: 'jobseeker.applications.index' },
-                    { name: 'Profile', route: 'jobseeker.profile.show' },
+                    { name: 'Browse Jobs', href: '/jobseeker/jobs' }, // authenticated browse jobs
+                    { name: 'My Applications', href: '/jobseeker/applications' },
+                    { name: 'My CV', href: '/jobseeker/resumes' },
+                    { name: 'Profile', href: '/jobseeker/profile' },
                 ];
             default:
                 return [];
@@ -72,11 +73,17 @@ export default function Navbar() {
 
                         {/* Desktop Menu */}
                         <div className="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
-                            {menuItems.map((item) => (
-                                <NavLink key={item.route} href={route(item.route)} active={route().current(item.route)}>
-                                    {item.name}
-                                </NavLink>
-                            ))}
+                            {menuItems.map((item) => {
+                                const href = item.href || route(item.route);
+                                const isActive = item.href
+                                    ? window.location.pathname === item.href
+                                    : route().current(item.route);
+                                return (
+                                    <NavLink key={item.name} href={href} active={isActive}>
+                                        {item.name}
+                                    </NavLink>
+                                );
+                            })}
                         </div>
                     </div>
 
@@ -168,11 +175,17 @@ export default function Navbar() {
             {/* Mobile Menu */}
             <div className={(showingNavigationDropdown ? 'block' : 'hidden') + ' sm:hidden'}>
                 <div className="space-y-1 pb-3 pt-2">
-                    {menuItems.map((item) => (
-                        <ResponsiveNavLink key={item.route} href={route(item.route)} active={route().current(item.route)}>
-                            {item.name}
-                        </ResponsiveNavLink>
-                    ))}
+                    {menuItems.map((item) => {
+                        const href = item.href || route(item.route);
+                        const isActive = item.href
+                            ? window.location.pathname === item.href
+                            : route().current(item.route);
+                        return (
+                            <ResponsiveNavLink key={item.name} href={href} active={isActive}>
+                                {item.name}
+                            </ResponsiveNavLink>
+                        );
+                    })}
                 </div>
 
                 <div className="border-t border-gray-200 pb-1 pt-4">

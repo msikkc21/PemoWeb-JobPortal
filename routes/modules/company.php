@@ -111,12 +111,12 @@ Route::middleware(['auth', 'check.permission:company', 'ensure.profile'])->group
     Route::get('/company/applicants/{id}/interviews/create', [\App\Http\Controllers\Company\InterviewController::class, 'create'])
         ->name('company.applicants.interviews.create');
 
-    Route::post('/company/interviews', [\App\Http\Controllers\Company\InterviewController::class, 'store'])
-        ->name('company.interviews.store');
-
     // Company interview listing
     Route::get('/company/interviews', [\App\Http\Controllers\Company\InterviewController::class, 'index'])
         ->name('company.interviews.index');
+
+    Route::post('/company/interviews', [\App\Http\Controllers\Company\InterviewController::class, 'store'])
+        ->name('company.interviews.store');
 
     // Start and complete interview
     Route::get('/company/interviews/{id}/start', [\App\Http\Controllers\Company\InterviewController::class, 'start'])

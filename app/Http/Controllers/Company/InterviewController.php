@@ -64,10 +64,10 @@ class InterviewController extends Controller
             abort(403, 'Anda tidak berwenang melakukan tindakan ini.');
         }
 
-        // Only allow creating interviews for applications that are reviewed or shortlisted
-        $allowedStatuses = ['reviewed', 'shortlisted'];
+        // Only allow creating interviews for applications that are reviewed, shortlisted, or submitted
+        $allowedStatuses = ['reviewed', 'shortlisted', 'submitted'];
         if (!in_array($application->status, $allowedStatuses)) {
-            return Redirect::back()->withErrors(['schedule' => 'Interview hanya dapat dijadwalkan untuk pelamar yang berstatus reviewed atau shortlisted.']);
+            return Redirect::back()->withErrors(['schedule' => 'Interview hanya dapat dijadwalkan untuk pelamar yang berstatus submitted, reviewed, atau shortlisted.']);
         }
 
         $interview = Interview::create([
@@ -77,11 +77,12 @@ class InterviewController extends Controller
             'status' => 'scheduled',
         ]);
 
-        // Update application status to 'interviewed'
-        $application->status = 'interviewed';
+        // Update application status to 'shortlisted' (shortlisted = diundang interview)
+        // Note: using 'shortlisted' because 'interview' is not in enum. 'interviewed' is for after interview completed.
+        $application->status = 'shortlisted';
         $application->save();
 
-        return Redirect::route('company.applicants.show', $application->id)->with('success', 'Interview berhasil dijadwalkan dan status lamaran diubah menjadi interviewed.');
+        return redirect('/company/applicants')->with('success', 'Interview berhasil dijadwalkan. Pelamar akan menerima undangan interview.');
     }
 
     /**

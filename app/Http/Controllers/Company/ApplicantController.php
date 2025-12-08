@@ -175,7 +175,7 @@ class ApplicantController extends Controller
         }
 
         $validated = $request->validate([
-            'status' => ['required', 'string', 'in:reviewed,shortlisted,interviewed,accepted,rejected,in_process']
+            'status' => ['required', 'string', 'in:submitted,in_process,shortlisted,interviewed,offered,accepted,rejected']
         ]);
 
         $application->status = $validated['status'];
@@ -187,7 +187,7 @@ class ApplicantController extends Controller
     /**
      * List all applicants for a specific job owned by the authenticated company.
      */
-    public function jobApplicants(Job $job)
+    public function jobApplicants(Request $request, Job $job)
     {
         $company = Auth::user()->company;
 
@@ -196,32 +196,37 @@ class ApplicantController extends Controller
             abort(403, 'Anda tidak berwenang melihat pelamar untuk lowongan ini.');
         }
 
-        // Pull applications for this job with job seeker basic info
-        $applications = Application::with(['jobSeeker'])
-            ->where('job_id', $job->id)
-            ->orderBy('application_date', 'desc')
-            ->get()
-            ->map(function ($app) {
-                return [
-                    'id' => $app->id,
-                    'status' => $app->status,
-                    'application_date' => $app->application_date,
-                    'job_seeker' => $app->jobSeeker ? [
-                        'id' => $app->jobSeeker->id,
-                        'name' => $app->jobSeeker->name ?? optional($app->jobSeeker->user)->name,
-                        'email' => optional($app->jobSeeker->user)->email,
-                    ] : null,
-                ];
-            });
+        $search = $request->input('search');
+        $status = $request->input('status');
 
-        return Inertia::render('Company/Applicants/ByJob', [
+        $query = Application::with(['job', 'jobSeeker'])
+            ->where('job_id', $job->id);
+
+        // Filter by applicant name
+        if (!empty($search)) {
+            $query->whereHas('jobSeeker', function ($q) use ($search) {
+                $q->where('name', 'like', '%' . $search . '%');
+            });
+        }
+
+        // Filter by status
+        if (!empty($status)) {
+            $query->where('status', $status);
+        }
+
+        $applications = $query->orderBy('application_date', 'desc')->get();
+
+        return Inertia::render('Company/Applicants/Index', [
+            'applications' => $applications,
+            'totalApplications' => $applications->count(),
+            'filters' => [
+                'search' => $search,
+                'status' => $status,
+            ],
             'job' => [
                 'id' => $job->id,
                 'title' => $job->title,
-                'status' => $job->status,
             ],
-            'applications' => $applications,
-            'totalApplications' => $applications->count(),
         ]);
     }
 }

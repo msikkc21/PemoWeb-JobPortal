@@ -6,6 +6,7 @@ use App\Http\Controllers\JobSeeker\ProfileController;
 use App\Http\Controllers\JobSeeker\DashboardController;
 use App\Http\Controllers\JobSeeker\JobController;
 use App\Http\Controllers\JobSeeker\ResumeController;
+use App\Http\Controllers\JobSeeker\InterviewController;
 // use App\Http\Controllers\ApplicationController;
 
 
@@ -40,6 +41,10 @@ Route::middleware(['auth', 'check.permission:jobseeker', 'ensure.profile'])->gro
     Route::post('/jobseeker/profile/update', [ProfileController::class, 'update'])
         ->name('jobseeker.profile.update');
 
+    // Interview routes
+    Route::get('/jobseeker/interviews', [InterviewController::class, 'index'])
+        ->name('jobseeker.interviews.index');
+
     // Jobs routes
     Route::get('/jobseeker/jobs', [JobController::class, 'index'])
         ->name('jobseeker.jobs.index');
@@ -59,11 +64,11 @@ Route::middleware(['auth', 'check.permission:jobseeker', 'ensure.profile'])->gro
             'destroy' => 'jobseeker.applications.destroy',
         ]);
 //added this 10.51 02 Okt 2025        
-Route::middleware(['auth','check.permission:jobseeker'])->prefix('jobseeker')->group(function () {
-    Route::resource('jobs', JobController::class)->only(['index','show']);
-    Route::resource('applications', ApplicationController::class);
-    Route::resource('profile', ProfileController::class)->only(['show','edit','update']);
-    Route::resource('resumes', ResumeController::class);
+Route::middleware(['auth','check.permission:jobseeker'])->prefix('jobseeker')->name('jobseeker.')->group(function () {
+    Route::resource('jobs', JobController::class)->only(['index','show'])->names('jobs2');
+    Route::resource('applications', ApplicationController::class)->names('applications2');
+    Route::resource('profile', ProfileController::class)->only(['show','edit','update'])->names('profile2');
+    Route::resource('resumes', ResumeController::class)->names('resumes2');
 });
 
 //added this 12.02 17 Nov 2025
